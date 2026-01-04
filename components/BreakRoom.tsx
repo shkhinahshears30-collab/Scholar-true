@@ -1,15 +1,15 @@
-
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { X, Sparkles, Coffee, Moon, Wind, RefreshCcw, ChevronUp, ChevronDown, Cloud, Zap, Trophy, Play, Circle, ChevronLeft, ChevronRight, Boxes, Layout, Star, MousePointer2, LayoutGrid } from 'lucide-react';
+import { X, Sparkles, Coffee, Moon, Wind, RefreshCcw, ChevronUp, ChevronDown, Cloud, Zap, Trophy, Play, Circle, ChevronLeft, ChevronRight, Boxes, Layout, Star, MousePointer2, LayoutGrid, Timer } from 'lucide-react';
 import VerticalElevator from './VerticalElevator';
 
 interface BreakRoomProps {
   onClose: () => void;
+  timeLeft?: number; // Added to sync with App session break
 }
 
 type GameType = 'selection' | 'zen' | 'stars' | 'balloon' | 'snake' | 'merge' | 'blast';
 
-const BreakRoom: React.FC<BreakRoomProps> = ({ onClose }) => {
+const BreakRoom: React.FC<BreakRoomProps> = ({ onClose, timeLeft }) => {
   const [activeGame, setActiveGame] = useState<GameType>('selection');
   
   // Game Icons for Elevator
@@ -351,6 +351,19 @@ const BreakRoom: React.FC<BreakRoomProps> = ({ onClose }) => {
             <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Mindful Refreshment</p>
           </div>
         </div>
+
+        {/* Global Session Timer Overlay */}
+        {timeLeft !== undefined && (
+          <div className="flex items-center gap-3 bg-slate-900 px-6 py-3 rounded-2xl shadow-xl border border-white/10 animate-pulse">
+            <Timer size={18} className="text-emerald-400" />
+            <div className="flex flex-col items-start leading-none">
+              <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest">Break Time</span>
+              <span className="text-lg font-black text-white tabular-nums tracking-tight">
+                {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}
+              </span>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="flex-1 flex flex-col overflow-hidden pr-16">
@@ -432,7 +445,6 @@ const BreakRoom: React.FC<BreakRoomProps> = ({ onClose }) => {
           </div>
         )}
 
-        {/* ... Rest of games remain the same but wrapped in the container ... */}
         {activeGame === 'merge' && (
           <div className="flex-1 flex flex-col bg-[#f0f4f8] rounded-[3rem] p-8 overflow-hidden animate-in zoom-in-95">
              <div className="flex justify-between items-center mb-6">

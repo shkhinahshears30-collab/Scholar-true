@@ -1,8 +1,9 @@
+
 import React, { useState } from 'react';
 import { 
   X, User, Shield, Bell, CreditCard, ChevronRight, Crown, Zap, 
   Settings as SettingsIcon, LogOut, CheckCircle2, DollarSign,
-  Globe, Moon, Smartphone, Lock, ShieldCheck, ChevronDown, Scale, FileText, WifiOff, Link, ChevronLeft
+  Globe, Moon, Smartphone, Lock, ShieldCheck, ChevronDown, Scale, FileText, WifiOff, Link, ChevronLeft, Music as MusicIcon
 } from 'lucide-react';
 import { UserSettings, AppRoute } from '../types';
 import { PREMIUM_PLANS, LANG_OPTIONS } from '../constants';
@@ -45,7 +46,6 @@ const SettingsView: React.FC<SettingsViewProps> = ({ settings, onUpdate, onClose
 
   return (
     <div className={`fixed inset-0 z-[60] flex flex-col animate-in slide-in-from-right duration-500 ${settings.darkMode ? 'bg-slate-950 text-white' : 'bg-[#f8fafc] text-slate-900'}`}>
-      {/* Header */}
       <div className={`p-6 border-b flex items-center justify-between shrink-0 ${settings.darkMode ? 'bg-slate-900/50 border-slate-800' : 'bg-white border-slate-100'}`}>
         <div className="flex items-center gap-3">
           <button onClick={onClose} className={`p-3 rounded-2xl ${settings.darkMode ? 'bg-white/5 text-slate-400' : 'bg-slate-50 text-slate-400'}`}><ChevronLeft size={20} /></button>
@@ -62,7 +62,6 @@ const SettingsView: React.FC<SettingsViewProps> = ({ settings, onUpdate, onClose
       <div className="flex-1 overflow-y-auto p-6 space-y-8 pb-32">
         {activeSection === 'main' ? (
           <>
-            {/* Profile Summary */}
             <div className={`p-6 rounded-[2.5rem] border shadow-sm flex items-center gap-4 ${settings.darkMode ? 'bg-white/5 border-white/10' : 'bg-white border-slate-100'}`}>
               <div className="w-16 h-16 bg-indigo-600 rounded-3xl flex items-center justify-center text-3xl shadow-lg">
                 {settings.profilePic}
@@ -80,7 +79,6 @@ const SettingsView: React.FC<SettingsViewProps> = ({ settings, onUpdate, onClose
               </button>
             </div>
 
-            {/* Ultra Premium Card */}
             <div className={`rounded-[3rem] p-8 text-white relative overflow-hidden shadow-2xl ${settings.isPremium || settings.isRoyal ? 'bg-slate-900' : 'bg-gradient-to-br from-indigo-600 to-purple-700'}`}>
               <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 blur-3xl rounded-full"></div>
               <Crown className="text-amber-400 mb-4" size={32} />
@@ -99,7 +97,6 @@ const SettingsView: React.FC<SettingsViewProps> = ({ settings, onUpdate, onClose
               </button>
             </div>
 
-            {/* Royal Premium Card (Under Ultra) */}
             <div className={`rounded-[3rem] p-8 text-white relative overflow-hidden shadow-2xl transition-all ${settings.isRoyal ? 'bg-slate-900 border-2 border-amber-400' : 'bg-gradient-to-br from-amber-400 via-amber-200 to-amber-600 border border-amber-500/30'}`}>
               <div className="absolute top-0 right-0 w-32 h-32 bg-white/20 blur-3xl rounded-full"></div>
               <div className="flex items-center gap-2 mb-4">
@@ -121,12 +118,9 @@ const SettingsView: React.FC<SettingsViewProps> = ({ settings, onUpdate, onClose
               </button>
             </div>
 
-            {/* Account & Security */}
             <div className="space-y-3">
               <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4">Account & Security</h4>
               <div className={`rounded-[2.5rem] border overflow-hidden shadow-sm ${settings.darkMode ? 'bg-white/5 border-white/10' : 'bg-white border-slate-100'}`}>
-                
-                {/* Stay Logged In Toggle */}
                 <div className={`flex items-center justify-between p-5 border-b last:border-0 ${settings.darkMode ? 'border-white/5' : 'border-slate-50'}`}>
                   <div className="flex items-center gap-4">
                     <div className={`p-2 rounded-xl ${settings.darkMode ? 'bg-blue-500/20 text-blue-400' : 'bg-blue-50 text-blue-500'}`}>
@@ -140,7 +134,6 @@ const SettingsView: React.FC<SettingsViewProps> = ({ settings, onUpdate, onClose
                   />
                 </div>
 
-                {/* Guardian Link Portal */}
                 <button 
                   onClick={() => onNavigate?.(AppRoute.GUARDIAN)}
                   className={`w-full flex items-center justify-between p-5 border-b last:border-0 group ${settings.darkMode ? 'border-white/5 hover:bg-white/5' : 'border-slate-50 hover:bg-slate-50'}`}
@@ -161,12 +154,10 @@ const SettingsView: React.FC<SettingsViewProps> = ({ settings, onUpdate, onClose
               </div>
             </div>
 
-            {/* Quick Preferences */}
             <div className="space-y-3">
               <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4">App Settings</h4>
               <div className={`rounded-[2.5rem] border overflow-hidden shadow-sm ${settings.darkMode ? 'bg-white/5 border-white/10' : 'bg-white border-slate-100'}`}>
                 
-                {/* Dark Mode Toggle */}
                 <div className={`flex items-center justify-between p-5 border-b last:border-0 ${settings.darkMode ? 'border-white/5' : 'border-slate-50'}`}>
                   <div className="flex items-center gap-4">
                     <div className={`p-2 rounded-xl ${settings.darkMode ? 'bg-indigo-500/20 text-indigo-400' : 'bg-slate-100 text-slate-400'}`}>
@@ -180,7 +171,6 @@ const SettingsView: React.FC<SettingsViewProps> = ({ settings, onUpdate, onClose
                   />
                 </div>
 
-                {/* Notifications Toggle */}
                 <div className={`flex items-center justify-between p-5 border-b last:border-0 ${settings.darkMode ? 'border-white/5' : 'border-slate-50'}`}>
                   <div className="flex items-center gap-4">
                     <div className={`p-2 rounded-xl ${settings.darkMode ? 'bg-emerald-500/20 text-emerald-400' : 'bg-slate-100 text-slate-400'}`}>
@@ -194,7 +184,19 @@ const SettingsView: React.FC<SettingsViewProps> = ({ settings, onUpdate, onClose
                   />
                 </div>
 
-                {/* Language Selector */}
+                <div className={`flex items-center justify-between p-5 border-b last:border-0 ${settings.darkMode ? 'border-white/5' : 'border-slate-50'}`}>
+                  <div className="flex items-center gap-4">
+                    <div className={`p-2 rounded-xl ${settings.darkMode ? 'bg-purple-500/20 text-purple-400' : 'bg-slate-100 text-slate-400'}`}>
+                      <MusicIcon size={18} />
+                    </div>
+                    <span className="text-sm font-bold">Scholar Ambience</span>
+                  </div>
+                  <Toggle 
+                    active={settings.musicEnabled} 
+                    onClick={() => onUpdate({ musicEnabled: !settings.musicEnabled })} 
+                  />
+                </div>
+
                 <div className={`flex items-center justify-between p-5 border-b last:border-0 ${settings.darkMode ? 'border-white/5' : 'border-slate-50'}`}>
                   <div className="flex items-center gap-4">
                     <div className={`p-2 rounded-xl ${settings.darkMode ? 'bg-amber-500/20 text-amber-400' : 'bg-slate-100 text-slate-400'}`}>
@@ -213,7 +215,6 @@ const SettingsView: React.FC<SettingsViewProps> = ({ settings, onUpdate, onClose
                   </button>
                 </div>
 
-                {/* Hidden Language Grid */}
                 {showLanguagePicker && (
                   <div className={`p-4 grid grid-cols-2 gap-2 border-b animate-in fade-in duration-300 ${settings.darkMode ? 'bg-black/20 border-white/5' : 'bg-slate-50 border-slate-50'}`}>
                     {LANG_OPTIONS.slice(0, 8).map(lang => (
@@ -230,7 +231,6 @@ const SettingsView: React.FC<SettingsViewProps> = ({ settings, onUpdate, onClose
               </div>
             </div>
 
-            {/* Safety & Legal */}
             <div className="space-y-3">
               <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4">Safety & Legal</h4>
               <div className={`rounded-[2.5rem] border overflow-hidden shadow-sm ${settings.darkMode ? 'bg-white/5 border-white/10' : 'bg-white border-slate-100'}`}>
@@ -280,7 +280,6 @@ const SettingsView: React.FC<SettingsViewProps> = ({ settings, onUpdate, onClose
               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Select your payment route</p>
             </div>
 
-            {/* Payment Gateways */}
             <div className={`p-8 rounded-[3rem] border shadow-xl space-y-6 ${settings.darkMode ? 'bg-white/5 border-white/10' : 'bg-white border-slate-100'}`}>
               <div>
                 <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4">Supported Gateways</h4>
@@ -309,7 +308,6 @@ const SettingsView: React.FC<SettingsViewProps> = ({ settings, onUpdate, onClose
               </div>
             </div>
 
-            {/* Plans List */}
             <div className="space-y-4">
               <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4">Current Plans</h4>
               {PREMIUM_PLANS.map(plan => (
@@ -336,7 +334,6 @@ const SettingsView: React.FC<SettingsViewProps> = ({ settings, onUpdate, onClose
             {renderPaymentLogos()}
           </div>
         ) : (
-          /* LEGAL SECTION */
           <div className="animate-in slide-in-from-bottom-4 duration-300 space-y-6">
              <button 
               onClick={() => setActiveSection('main')}
