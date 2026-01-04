@@ -32,10 +32,17 @@ export interface SponsorOffer {
   link: string;
 }
 
+export interface DashboardCustomization {
+  themeColor?: string;
+  stickers: { id: string; emoji: string; x: number; y: number }[];
+}
+
 export interface UserSettings {
   userName?: string;
   profilePic?: string;
+  rememberMe: boolean;
   isPremium: boolean;
+  isRoyal: boolean;
   age?: number;
   studyMode: StudyMode;
   language: string;
@@ -64,6 +71,7 @@ export interface UserSettings {
   calendarEvents: CalendarEvent[];
   dailyGenCount: number;
   lastGenDate?: string;
+  dashboardCustomization?: DashboardCustomization;
 }
 
 export interface FocusSession {
@@ -91,5 +99,9 @@ export enum AppRoute {
   BREAK = 'BREAK',
   AI_LAB = 'AI_LAB',
   LIVE_CHAT = 'LIVE_CHAT',
-  DESIGN_STUDIO = 'DESIGN_STUDIO'
+  DESIGN_STUDIO = 'DESIGN_STUDIO',
+  LIBRARY = 'LIBRARY',
+  INFOSPHERE = 'INFOSPHERE',
+  DESIGN_SANCTUARY = 'DESIGN_SANCTUARY',
+  WRITING_HAVEN = 'WRITING_HAVEN'
 }

@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import { BrainCircuit, Upload, Mic, Trash2, ChevronRight, ChevronLeft, Sparkles, CheckCircle, XCircle, Loader2, Camera } from 'lucide-react';
 import { Flashcard } from '../types';
@@ -6,13 +5,13 @@ import { generateFlashcards, verifyFlashcardAnswer } from '../services/gemini';
 
 interface FlashcardLabProps {
   sets: { id: string; title: string; cards: Flashcard[]; createdAt: string }[];
-  // Fix: Added missing language property to interface
   language: string;
   onSaveSet: (title: string, cards: Flashcard[]) => void;
   onDeleteSet: (id: string) => void;
+  onClose?: () => void;
 }
 
-const FlashcardLab: React.FC<FlashcardLabProps> = ({ sets, language, onSaveSet, onDeleteSet }) => {
+const FlashcardLab: React.FC<FlashcardLabProps> = ({ sets, language, onSaveSet, onDeleteSet, onClose }) => {
   const [mode, setMode] = useState<'list' | 'create' | 'study'>('list');
   const [activeSetId, setActiveSetId] = useState<string | null>(null);
   const [inputContent, setInputContent] = useState('');
@@ -71,14 +70,19 @@ const FlashcardLab: React.FC<FlashcardLabProps> = ({ sets, language, onSaveSet, 
   };
 
   return (
-    <div className="p-6 pb-24">
-      <div className="flex items-center gap-3 mb-8">
-        <div className="p-3 bg-indigo-600 text-white rounded-2xl shadow-lg">
-          <BrainCircuit size={24} />
-        </div>
-        <div>
-          <h1 className="text-2xl font-black tracking-tighter">Flashcard Lab</h1>
-          <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Master your subjects</p>
+    <div className="p-6 pb-24 min-h-screen">
+      <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center gap-3">
+          <button onClick={onClose} className="p-2 -ml-2 text-slate-400 hover:text-indigo-600 transition-colors">
+            <ChevronLeft size={24} />
+          </button>
+          <div className="p-2.5 bg-indigo-600 text-white rounded-2xl shadow-lg">
+            <BrainCircuit size={20} />
+          </div>
+          <div>
+            <h1 className="text-xl font-black tracking-tighter uppercase italic">Flashcard Lab</h1>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Master your subjects</p>
+          </div>
         </div>
       </div>
 
@@ -96,7 +100,7 @@ const FlashcardLab: React.FC<FlashcardLabProps> = ({ sets, language, onSaveSet, 
           <div className="space-y-3">
             {sets.map(set => (
               <div key={set.id} className="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm flex items-center justify-between group">
-                <div className="flex items-center gap-4 cursor-pointer" onClick={() => startStudy(set.id)}>
+                <div className="flex items-center gap-4 cursor-pointer flex-1" onClick={() => startStudy(set.id)}>
                   <div className="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-400">
                     <BrainCircuit size={20} />
                   </div>
@@ -154,9 +158,11 @@ const FlashcardLab: React.FC<FlashcardLabProps> = ({ sets, language, onSaveSet, 
       {mode === 'study' && activeSet && (
         <div className="space-y-8 animate-in zoom-in-95 duration-300">
           <div className="flex items-center justify-between">
-            <button onClick={() => setMode('list')} className="text-slate-400 hover:text-slate-600"><ChevronLeft size={24} /></button>
+            <button onClick={() => setMode('list')} className="flex items-center gap-2 text-slate-400 hover:text-slate-600">
+               <ChevronLeft size={20} />
+               <span className="text-[10px] font-black uppercase tracking-widest">Back to List</span>
+            </button>
             <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Card {studyIndex + 1} of {activeSet.cards.length}</span>
-            <div className="w-6 h-6" />
           </div>
 
           <div className="perspective-[1000px] h-80 w-full relative group">

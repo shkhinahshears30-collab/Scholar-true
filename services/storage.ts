@@ -5,7 +5,9 @@ import { STORAGE_KEY } from '../constants';
 const DEFAULT_SETTINGS: UserSettings = {
   userName: undefined,
   profilePic: '🎓',
+  rememberMe: true,
   isPremium: false,
+  isRoyal: false,
   age: undefined,
   studyMode: 'school',
   language: 'en',
@@ -26,14 +28,28 @@ const DEFAULT_SETTINGS: UserSettings = {
   vocabulary: [],
   calendarEvents: [],
   dailyGenCount: 0,
+  dashboardCustomization: {
+    themeColor: '#fcfcfd',
+    stickers: []
+  }
 };
 
 export const saveSettings = (settings: UserSettings) => {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
+  const data = JSON.stringify(settings);
+  if (settings.rememberMe) {
+    localStorage.setItem(STORAGE_KEY, data);
+    sessionStorage.removeItem(STORAGE_KEY);
+  } else {
+    sessionStorage.setItem(STORAGE_KEY, data);
+    localStorage.removeItem(STORAGE_KEY);
+  }
 };
 
 export const loadSettings = (): UserSettings => {
-  const data = localStorage.getItem(STORAGE_KEY);
+  const localData = localStorage.getItem(STORAGE_KEY);
+  const sessionData = sessionStorage.getItem(STORAGE_KEY);
+  
+  const data = localData || sessionData;
   const settings = data ? JSON.parse(data) : DEFAULT_SETTINGS;
   
   // Reset daily generation count if it's a new day
@@ -46,6 +62,7 @@ export const loadSettings = (): UserSettings => {
   // Ensure habitats are initialized
   if (!settings.unlockedHabitats) settings.unlockedHabitats = ['default'];
   if (!settings.selectedHabitat) settings.selectedHabitat = 'default';
+  if (!settings.dashboardCustomization) settings.dashboardCustomization = { themeColor: '#fcfcfd', stickers: [] };
   
   return settings;
 };

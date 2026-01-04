@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 /* Import Smartphone from lucide-react */
-import { Sparkles, Camera, X, Play, Loader2, Wand2, ChevronRight, Download, Clapperboard, MonitorPlay, Smartphone } from 'lucide-react';
+import { Sparkles, Camera, X, Play, Loader2, Wand2, ChevronRight, Download, Clapperboard, MonitorPlay, Smartphone, ChevronLeft } from 'lucide-react';
 import { generateVeoVideo } from '../services/gemini';
 
 interface AILabProps {
@@ -62,6 +62,7 @@ const AILab: React.FC<AILabProps> = ({ onClose, isPremium }) => {
     <div className="fixed inset-0 bg-white z-[80] flex flex-col p-6 animate-in slide-in-from-bottom-10 duration-500 overflow-y-auto no-scrollbar">
       <div className="flex items-center justify-between mb-10 shrink-0">
         <div className="flex items-center gap-3">
+          <button onClick={onClose} className="p-3 bg-slate-50 rounded-2xl text-slate-400 hover:text-slate-600 transition-colors"><ChevronLeft size={20} /></button>
           <div className="p-3 bg-purple-600 text-white rounded-2xl shadow-lg">
             <Clapperboard size={24} />
           </div>
@@ -70,7 +71,6 @@ const AILab: React.FC<AILabProps> = ({ onClose, isPremium }) => {
             <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Animate your study world</p>
           </div>
         </div>
-        <button onClick={onClose} className="p-3 bg-slate-50 rounded-2xl text-slate-400"><X size={20} /></button>
       </div>
 
       {!videoUrl ? (

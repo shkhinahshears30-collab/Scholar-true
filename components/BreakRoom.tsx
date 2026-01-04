@@ -342,6 +342,7 @@ const BreakRoom: React.FC<BreakRoomProps> = ({ onClose }) => {
 
       <div className="flex items-center justify-between mb-10 shrink-0 pr-16">
         <div className="flex items-center gap-3">
+          <button onClick={onClose} className="p-3 bg-slate-50 rounded-2xl text-slate-400 hover:text-slate-600 transition-colors"><ChevronLeft size={20} /></button>
           <div className="p-3 bg-emerald-500 text-white rounded-2xl shadow-lg">
             <Coffee size={24} />
           </div>
@@ -350,9 +351,6 @@ const BreakRoom: React.FC<BreakRoomProps> = ({ onClose }) => {
             <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Mindful Refreshment</p>
           </div>
         </div>
-        <button onClick={onClose} className="p-3 bg-slate-50 rounded-2xl text-slate-400 hover:text-slate-600 transition-colors">
-          <X size={20} />
-        </button>
       </div>
 
       <div className="flex-1 flex flex-col overflow-hidden pr-16">
@@ -461,7 +459,6 @@ const BreakRoom: React.FC<BreakRoomProps> = ({ onClose }) => {
         {['snake', 'stars', 'balloon', 'zen'].includes(activeGame) && (
           <div className="flex-1 flex flex-col items-center justify-center">
              <p className="text-slate-400 font-black uppercase tracking-widest mb-4">Entering the Scholar Lift Area...</p>
-             {/* This area renders the respective game logic already defined in your Turn 6 */}
              <div className="w-full h-full">
                 {activeGame === 'snake' && (
                   <div className="flex-1 flex flex-col bg-slate-950 rounded-[3rem] p-8 overflow-hidden animate-in zoom-in-95 h-full">

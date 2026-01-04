@@ -1,17 +1,16 @@
-
 import React, { useState } from 'react';
 import { CalendarDays, Plus, Clock, Trash2, X, ChevronLeft, ChevronRight, BookOpen, Coffee, AlertTriangle } from 'lucide-react';
 import { CalendarEvent } from '../types';
 
 interface CalendarScheduleProps {
   events: CalendarEvent[];
-  // Fix: Added missing language property to interface
   language: string;
   onAddEvent: (event: Omit<CalendarEvent, 'id'>) => void;
   onDeleteEvent: (id: string) => void;
+  onClose?: () => void;
 }
 
-const CalendarSchedule: React.FC<CalendarScheduleProps> = ({ events, language, onAddEvent, onDeleteEvent }) => {
+const CalendarSchedule: React.FC<CalendarScheduleProps> = ({ events, language, onAddEvent, onDeleteEvent, onClose }) => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [isAdding, setIsAdding] = useState(false);
   const [newTitle, setNewTitle] = useState('');
@@ -51,20 +50,23 @@ const CalendarSchedule: React.FC<CalendarScheduleProps> = ({ events, language, o
   ];
 
   return (
-    <div className="p-6 pb-24">
+    <div className="p-6 pb-24 min-h-screen">
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-3">
-          <div className="p-3 bg-emerald-500 text-white rounded-2xl shadow-lg">
-            <CalendarDays size={24} />
+          <button onClick={onClose} className="p-2 -ml-2 text-slate-400 hover:text-indigo-600 transition-colors">
+            <ChevronLeft size={24} />
+          </button>
+          <div className="p-2.5 bg-emerald-500 text-white rounded-2xl shadow-lg">
+            <CalendarDays size={20} />
           </div>
           <div>
-            <h1 className="text-2xl font-black tracking-tighter">Planner</h1>
-            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Organize your time</p>
+            <h1 className="text-xl font-black tracking-tighter uppercase italic">Planner</h1>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Organize your time</p>
           </div>
         </div>
         <button 
           onClick={() => setIsAdding(true)}
-          className="p-4 bg-slate-900 text-white rounded-2xl shadow-xl hover:scale-105 transition-transform active:scale-95"
+          className="p-3 bg-slate-900 text-white rounded-2xl shadow-xl hover:scale-105 transition-transform active:scale-95"
         >
           <Plus size={20} />
         </button>

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { 
   Sprout, Cat, Cpu, Flame, Bird, Ghost, Dog, Fish, Rabbit, Mouse, Turtle, Bug,
@@ -205,10 +204,12 @@ export const SPONSOR_OFFERS: SponsorOffer[] = [
 
 export const MAX_TIME_FREE = 60;
 export const MAX_TIME_PREMIUM = 120;
+export const MAX_TIME_ROYAL = 300;
 
 export const PREMIUM_PLANS = [
   { id: 'weekly', label: 'Weekly Access', usd: '$1.99', eur: '€1.79', billing: 'per week' },
   { id: 'monthly', label: 'Monthly Elite', usd: '$4.99', eur: '€4.49', billing: 'per month', popular: true },
+  { id: 'royal', label: 'Royal Premium', usd: '$9.99', eur: '€8.99', billing: 'per month', royal: true, desc: 'Everything in Premium + 5HR Sessions + Offline Mode + Guardian Time Control' },
   { id: 'yearly', label: 'Annual Ultra', usd: '$69.99', eur: '€34.99', billing: 'per year', savings: 'Save over 50%' },
 ];
 

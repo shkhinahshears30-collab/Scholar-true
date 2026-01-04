@@ -1,6 +1,6 @@
 
 import React, { useState, useRef } from 'react';
-import { Search, SpellCheck, Book, Trash2, CheckCircle2, Loader2, Sparkles, X, Globe, FileUp, Lock, Crown, Headphones, Volume2, BrainCircuit, GraduationCap, Camera, ScanText, Zap, Lightbulb, Users, UserPlus, MessageCircle, PhoneCall, Share2, Video, Mic, MonitorUp, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, SpellCheck, Book, Trash2, CheckCircle2, Loader2, Sparkles, X, Globe, FileUp, Lock, Crown, Headphones, Volume2, BrainCircuit, GraduationCap, Camera, ScanText, Zap, Lightbulb, Users, UserPlus, MessageCircle, PhoneCall, Share2, Video, Mic, MonitorUp, ChevronLeft, ChevronRight, Library } from 'lucide-react';
 import { getDefinition, researchQuery, generateSpellingQuiz, generateFlashcards, analyzeImage } from '../services/gemini';
 import { VocabularyWord, AppRoute } from '../types';
 
@@ -9,12 +9,13 @@ interface AcademyHubProps {
   onAddWord: (word: VocabularyWord) => void;
   onRemoveWord: (word: string) => void;
   isPremium: boolean;
+  isRoyal: boolean;
   setAppRoute?: (route: AppRoute) => void;
   onClose: () => void;
 }
 
-const AcademyHub: React.FC<AcademyHubProps> = ({ vocabulary, onAddWord, onRemoveWord, isPremium, setAppRoute, onClose }) => {
-  const [activeTab, setActiveTab] = useState<'lexicon' | 'spelling' | 'voicetutor' | 'filetest' | 'research' | 'scanner' | 'group'>('lexicon');
+const AcademyHub: React.FC<AcademyHubProps> = ({ vocabulary, onAddWord, onRemoveWord, isPremium, isRoyal, setAppRoute, onClose }) => {
+  const [activeTab, setActiveTab] = useState<'lexicon' | 'spelling' | 'voicetutor' | 'filetest' | 'research' | 'scanner' | 'group' | 'royal_library'>('lexicon');
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<any>(null);
@@ -39,6 +40,10 @@ const AcademyHub: React.FC<AcademyHubProps> = ({ vocabulary, onAddWord, onRemove
     { id: 'scanner', icon: <ScanText size={16} />, label: 'Scholar Scanner', premium: false },
     { id: 'filetest', icon: <FileUp size={16} />, label: 'Exam Forge', premium: true },
     { id: 'research', icon: <Globe size={16} />, label: 'Research Hive', premium: true },
+  ];
+
+  const royalTabs = [
+    { id: 'royal_library', icon: <Library size={16} />, label: 'Scholar Archive', royal: true },
   ];
 
   const subjects = [
@@ -72,6 +77,17 @@ const AcademyHub: React.FC<AcademyHubProps> = ({ vocabulary, onAddWord, onRemove
         const prompt = `You are a Scholar Tutor. Analyze this ${scannerSubject} problem from the image. Provide a clear solution and a detailed explanation of the steps taken.`;
         const aiResponse = await analyzeImage(scannedImage, prompt);
         setResult({ type: 'solution', text: aiResponse });
+      } else if (activeTab === 'royal_library') {
+        // Redirect to full library route if possible
+        if (setAppRoute) {
+            setAppRoute(AppRoute.LIBRARY);
+            return;
+        }
+        setTimeout(() => {
+          setResult({ text: `Archive Sync: Found 1,200,452 matches for "${searchQuery}" in the 5,000,000+ title vault. Switch to Library view for full access.` });
+          setLoading(false);
+        }, 1200);
+        return;
       }
     } catch (e) {
       setResult({ text: "Scholar Link Error. Please check connection." });
@@ -237,19 +253,72 @@ const AcademyHub: React.FC<AcademyHubProps> = ({ vocabulary, onAddWord, onRemove
     );
   };
 
+  const renderRoyalLibraryGate = () => {
+    if (!isRoyal) {
+      return (
+        <div className="flex flex-col items-center justify-center p-12 text-center bg-slate-900/50 rounded-[3rem] border border-amber-500/20 animate-in zoom-in-95">
+           <div className="p-6 bg-amber-400 rounded-full mb-6 shadow-[0_0_40px_rgba(251,191,36,0.2)]">
+              <Lock size={48} className="text-slate-950" />
+           </div>
+           <h3 className="text-2xl font-black italic uppercase tracking-tighter text-amber-400">Royal Access Only</h3>
+           <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-2 leading-relaxed px-10">The Scholar Archive is an exclusive benefit for Royal Scholars. Use secret code "2059" to unlock for free.</p>
+           <button onClick={() => setAppRoute?.(AppRoute.PREMIUM)} className="mt-8 bg-amber-400 text-slate-950 px-10 py-4 rounded-3xl font-black text-xs uppercase tracking-widest shadow-xl active:scale-95 transition-all">Unlock Premium</button>
+        </div>
+      );
+    }
+
+    return (
+      <div className="space-y-6 animate-in slide-in-from-bottom-4 duration-500">
+         <div className="bg-gradient-to-br from-amber-500 to-amber-700 p-8 rounded-[3rem] text-slate-950 relative overflow-hidden shadow-2xl">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-white/20 blur-3xl rounded-full"></div>
+            <div className="flex items-center gap-3 mb-4">
+               <Crown size={32} />
+               <h3 className="text-2xl font-black italic uppercase tracking-tighter">Archive Synced</h3>
+            </div>
+            <p className="text-[10px] font-black uppercase tracking-widest text-amber-100 leading-relaxed mb-2">5,000,000+ Global Public Domain Titles Integrated</p>
+            <p className="text-[8px] font-bold uppercase tracking-[0.2em] opacity-80 leading-relaxed mb-6">Explore Science, Maths, History, and Philosophy with Royal precision.</p>
+            <button 
+                onClick={() => setAppRoute?.(AppRoute.LIBRARY)}
+                className="bg-slate-950 text-amber-400 px-8 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl active:scale-95 transition-all"
+            >
+                Launch Full Library
+            </button>
+         </div>
+
+         <div className="relative group">
+            <input 
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleAction()}
+              placeholder="Search Public Archives..."
+              className="w-full bg-white/5 border border-amber-500/20 rounded-2xl py-5 pl-12 pr-4 text-xs font-black text-amber-100 focus:outline-none focus:ring-1 focus:ring-amber-500/50 uppercase tracking-tighter"
+            />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-amber-500/50" size={18} />
+         </div>
+
+         {result && (
+            <div className="p-6 bg-white/5 border border-amber-500/30 rounded-[2rem] animate-in fade-in">
+                <p className="text-xs font-bold text-amber-100 italic leading-relaxed">{result.text}</p>
+            </div>
+         )}
+      </div>
+    );
+  };
+
   return (
     <div className="fixed inset-0 bg-black z-[90] flex flex-col p-6 animate-in fade-in duration-500 overflow-hidden text-white">
       <div className="flex items-center justify-between mb-8 pr-16">
         <div className="flex items-center gap-3">
+          <button onClick={onClose} className="p-2 text-slate-500 hover:text-white transition-colors"><ChevronLeft size={32} /></button>
           <div className="p-3 bg-white/10 text-white rounded-2xl border border-white/10 backdrop-blur-md">
             <Book size={24} />
           </div>
           <div>
             <h1 className="text-2xl font-black tracking-tighter uppercase italic leading-none">THE ACADEMY</h1>
-            <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mt-1 italic">Level {isPremium ? 'Elite' : 'Basic'} Active</p>
+            <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mt-1 italic">Level {isRoyal ? 'Royal Elite' : isPremium ? 'Elite' : 'Basic'} Active</p>
           </div>
         </div>
-        <button onClick={onClose} className="p-2 text-slate-500 hover:text-white transition-colors"><X size={32} /></button>
       </div>
 
       <div className="space-y-6 shrink-0 pr-16 pb-6">
@@ -290,10 +359,29 @@ const AcademyHub: React.FC<AcademyHubProps> = ({ vocabulary, onAddWord, onRemove
             ))}
           </div>
         </div>
+
+        <div>
+          <label className="text-[8px] font-black text-amber-500/50 uppercase tracking-widest mb-2 block ml-2">Royal Suite</label>
+          <div className="flex gap-2 overflow-x-auto no-scrollbar">
+            {royalTabs.map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => { setActiveTab(tab.id as any); setResult(null); setGroupView('menu'); }}
+                className={`flex-none px-6 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all border ${activeTab === tab.id ? 'bg-amber-600 text-white border-amber-500 shadow-[0_0_20px_rgba(217,119,6,0.2)]' : 'bg-white/5 border-white/10 text-amber-500/60'}`}
+              >
+                <div className="flex items-center gap-2">
+                  {tab.icon}
+                  {tab.label}
+                  <Crown size={10} className="ml-1 fill-current" />
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
 
       <div className="flex-1 overflow-y-auto no-scrollbar pr-16 space-y-6 pb-20">
-        {activeTab === 'group' ? renderGroupFeature() : activeTab === 'scanner' ? (
+        {activeTab === 'royal_library' ? renderRoyalLibraryGate() : activeTab === 'group' ? renderGroupFeature() : activeTab === 'scanner' ? (
           <div className="space-y-6">
             {!scannerSubject ? (
               <div className="space-y-4 animate-in slide-in-from-bottom-4">

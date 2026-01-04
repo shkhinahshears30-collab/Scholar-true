@@ -1,10 +1,9 @@
-
 import React, { useState, useRef } from 'react';
-import { Crown, CheckCircle2, Zap, ShieldCheck, Grid, Clock, Star, X, Infinity, Smartphone, ChevronDown, ChevronUp } from 'lucide-react';
+import { Crown, CheckCircle2, Zap, ShieldCheck, Grid, Clock, Star, X, Infinity, Smartphone, ChevronDown, ChevronUp, WifiOff, ChevronLeft } from 'lucide-react';
 import { PREMIUM_PLANS } from '../constants';
 
 interface PremiumSelectionProps {
-  onPurchase: () => void;
+  onPurchase: (isRoyal?: boolean) => void;
   onClose: () => void;
 }
 
@@ -19,6 +18,7 @@ const PremiumSelection: React.FC<PremiumSelectionProps> = ({ onPurchase, onClose
     { icon: <ShieldCheck className="text-emerald-400" />, text: "Ad-Free Deep Work" },
     { icon: <Infinity className="text-indigo-400" />, text: "Unlimited Flashcard Sets" },
     { icon: <Smartphone className="text-pink-400" />, text: "Real App Blocking Simulation" },
+    { icon: <WifiOff className="text-amber-600" />, text: "True Offline Mode (Royal)" },
   ];
 
   const scrollFeatures = (dir: 'up' | 'down') => {
@@ -35,9 +35,9 @@ const PremiumSelection: React.FC<PremiumSelectionProps> = ({ onPurchase, onClose
       <div className="relative w-full max-w-md px-8 py-12 flex flex-col items-center">
         <button 
           onClick={onClose}
-          className="absolute top-4 right-4 p-3 text-white/30 hover:text-white transition-colors"
+          className="absolute top-4 left-4 p-3 text-white/30 hover:text-white transition-colors"
         >
-          <X size={24} />
+          <ChevronLeft size={24} />
         </button>
 
         <div className="inline-flex items-center justify-center p-4 bg-amber-400 rounded-3xl mb-6 shadow-[0_0_40px_rgba(251,191,36,0.4)] animate-float">
@@ -59,24 +59,26 @@ const PremiumSelection: React.FC<PremiumSelectionProps> = ({ onPurchase, onClose
             <button
               key={plan.id}
               onClick={() => setSelectedPlan(plan.id)}
-              className={`relative p-6 rounded-[2.5rem] border-2 transition-all text-left flex items-center justify-between ${selectedPlan === plan.id ? 'bg-white border-indigo-500 shadow-2xl' : 'bg-white/5 border-white/10'}`}
+              className={`relative p-6 rounded-[2.5rem] border-2 transition-all text-left flex items-center justify-between ${selectedPlan === plan.id ? (plan.royal ? 'bg-amber-50 border-amber-500 shadow-2xl' : 'bg-white border-indigo-500 shadow-2xl') : 'bg-white/5 border-white/10'}`}
             >
               {plan.popular && <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-indigo-600 text-white px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest shadow-lg">Most Popular</div>}
+              {plan.royal && <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-amber-500 text-white px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest shadow-lg">ELITE OFFLINE</div>}
+              
               <div>
-                <h3 className={`font-black uppercase text-[10px] tracking-wider mb-1 ${selectedPlan === plan.id ? 'text-indigo-600' : 'text-slate-400'}`}>{plan.label}</h3>
+                <h3 className={`font-black uppercase text-[10px] tracking-wider mb-1 ${selectedPlan === plan.id ? (plan.royal ? 'text-amber-600' : 'text-indigo-600') : 'text-slate-400'}`}>{plan.label}</h3>
                 <div className="flex items-baseline gap-1">
                   <span className={`text-2xl font-black ${selectedPlan === plan.id ? 'text-black' : 'text-white'}`}>{currency === 'USD' ? plan.usd : plan.eur}</span>
                   <span className={`text-[10px] font-bold ${selectedPlan === plan.id ? 'text-slate-400' : 'text-slate-500'}`}>/ {plan.billing}</span>
                 </div>
               </div>
-              <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${selectedPlan === plan.id ? 'border-indigo-600 bg-indigo-600' : 'border-white/20'}`}>
+              <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${selectedPlan === plan.id ? (plan.royal ? 'border-amber-600 bg-amber-600' : 'border-indigo-600 bg-indigo-600') : 'border-white/20'}`}>
                 {selectedPlan === plan.id && <CheckCircle2 size={16} className="text-white" />}
               </div>
             </button>
           ))}
         </div>
 
-        {/* Vertical Feature Explorer (The "Up-and-Down" requested) */}
+        {/* Vertical Feature Explorer */}
         <div className="w-full relative mb-12">
           <div className="absolute top-[-25px] left-1/2 -translate-x-1/2 text-white/10 animate-pulse"><ChevronUp size={20} /></div>
           
@@ -101,10 +103,10 @@ const PremiumSelection: React.FC<PremiumSelectionProps> = ({ onPurchase, onClose
 
         {/* Action Button */}
         <button 
-          onClick={onPurchase}
-          className="w-full bg-white text-black py-6 rounded-[2.5rem] font-black text-xl flex items-center justify-center gap-3 shadow-2xl hover:scale-105 active:scale-95 transition-all"
+          onClick={() => onPurchase(PREMIUM_PLANS.find(p => p.id === selectedPlan)?.royal)}
+          className={`w-full py-6 rounded-[2.5rem] font-black text-xl flex items-center justify-center gap-3 shadow-2xl hover:scale-105 active:scale-95 transition-all ${PREMIUM_PLANS.find(p => p.id === selectedPlan)?.royal ? 'bg-amber-500 text-white' : 'bg-white text-black'}`}
         >
-          ACTIVATE ULTRA <Zap size={20} className="fill-current" />
+          ACTIVATE {PREMIUM_PLANS.find(p => p.id === selectedPlan)?.royal ? 'ROYAL' : 'ULTRA'} <Zap size={20} className="fill-current" />
         </button>
         
         <p className="mt-8 text-[8px] text-slate-600 font-bold uppercase tracking-widest text-center leading-relaxed">

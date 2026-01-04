@@ -1,29 +1,27 @@
-
 import React, { useState } from 'react';
 import { 
   X, User, Shield, Bell, CreditCard, ChevronRight, Crown, Zap, 
   Settings as SettingsIcon, LogOut, CheckCircle2, DollarSign,
-  Globe, Moon, Smartphone, Lock, ShieldCheck, ChevronDown, Scale, FileText
+  Globe, Moon, Smartphone, Lock, ShieldCheck, ChevronDown, Scale, FileText, WifiOff, Link, ChevronLeft
 } from 'lucide-react';
-import { UserSettings } from '../types';
+import { UserSettings, AppRoute } from '../types';
 import { PREMIUM_PLANS, LANG_OPTIONS } from '../constants';
 
 interface SettingsViewProps {
   settings: UserSettings;
   onUpdate: (data: Partial<UserSettings>) => void;
   onClose: () => void;
+  onNavigate?: (route: AppRoute) => void;
 }
 
-const SettingsView: React.FC<SettingsViewProps> = ({ settings, onUpdate, onClose }) => {
+const SettingsView: React.FC<SettingsViewProps> = ({ settings, onUpdate, onClose, onNavigate }) => {
   const [activeSection, setActiveSection] = useState<'main' | 'billing' | 'legal'>('main');
   const [showLanguagePicker, setShowLanguagePicker] = useState(false);
   const [legalDoc, setLegalDoc] = useState<'privacy' | 'terms'>('privacy');
 
   const paymentMethods = [
-    { id: 'stripe', name: 'Stripe', color: 'bg-indigo-600', textColor: 'text-white' },
     { id: 'paypal', name: 'PayPal', color: 'bg-blue-500', textColor: 'text-white' },
-    { id: 'googlepay', name: 'Google Pay', color: 'bg-slate-900', textColor: 'text-white' },
-    { id: 'revenuecat', name: 'RevenueCat', color: 'bg-orange-500', textColor: 'text-white' }
+    { id: 'googlepay', name: 'Google Pay', color: 'bg-slate-900', textColor: 'text-white' }
   ];
 
   const Toggle = ({ active, onClick }: { active: boolean, onClick: () => void }) => (
@@ -50,6 +48,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({ settings, onUpdate, onClose
       {/* Header */}
       <div className={`p-6 border-b flex items-center justify-between shrink-0 ${settings.darkMode ? 'bg-slate-900/50 border-slate-800' : 'bg-white border-slate-100'}`}>
         <div className="flex items-center gap-3">
+          <button onClick={onClose} className={`p-3 rounded-2xl ${settings.darkMode ? 'bg-white/5 text-slate-400' : 'bg-slate-50 text-slate-400'}`}><ChevronLeft size={20} /></button>
           <div className="p-3 bg-slate-900 text-white rounded-2xl">
             <SettingsIcon size={24} />
           </div>
@@ -58,7 +57,6 @@ const SettingsView: React.FC<SettingsViewProps> = ({ settings, onUpdate, onClose
             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Scholar Preferences</p>
           </div>
         </div>
-        <button onClick={onClose} className={`p-3 rounded-2xl ${settings.darkMode ? 'bg-white/5 text-slate-400' : 'bg-slate-50 text-slate-400'}`}><X size={20} /></button>
       </div>
 
       <div className="flex-1 overflow-y-auto p-6 space-y-8 pb-32">
@@ -72,8 +70,8 @@ const SettingsView: React.FC<SettingsViewProps> = ({ settings, onUpdate, onClose
               <div className="flex-1">
                 <h2 className={`text-lg font-black ${settings.darkMode ? 'text-white' : 'text-slate-900'}`}>{settings.userName}</h2>
                 <div className="flex items-center gap-2">
-                  <span className={`px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest ${settings.isPremium ? 'bg-amber-100 text-amber-600' : 'bg-slate-100 text-slate-400'}`}>
-                    {settings.isPremium ? 'Ultra Member' : 'Standard Tier'}
+                  <span className={`px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest ${settings.isRoyal ? 'bg-amber-400 text-white' : settings.isPremium ? 'bg-amber-100 text-amber-600' : 'bg-slate-100 text-slate-400'}`}>
+                    {settings.isRoyal ? 'Royal Scholar' : settings.isPremium ? 'Ultra Member' : 'Standard Tier'}
                   </span>
                 </div>
               </div>
@@ -82,23 +80,85 @@ const SettingsView: React.FC<SettingsViewProps> = ({ settings, onUpdate, onClose
               </button>
             </div>
 
-            {/* Premium Upsell or Management */}
-            <div className={`rounded-[3rem] p-8 text-white relative overflow-hidden shadow-2xl ${settings.isPremium ? 'bg-slate-900' : 'bg-gradient-to-br from-indigo-600 to-purple-700'}`}>
+            {/* Ultra Premium Card */}
+            <div className={`rounded-[3rem] p-8 text-white relative overflow-hidden shadow-2xl ${settings.isPremium || settings.isRoyal ? 'bg-slate-900' : 'bg-gradient-to-br from-indigo-600 to-purple-700'}`}>
               <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 blur-3xl rounded-full"></div>
               <Crown className="text-amber-400 mb-4" size={32} />
               <h3 className="text-2xl font-black italic uppercase tracking-tighter mb-2">
-                {settings.isPremium ? 'Ultra Active' : 'Go Ultra Scholar'}
+                {settings.isPremium || settings.isRoyal ? 'Ultra Active' : 'Go Ultra Scholar'}
               </h3>
               <p className="text-white/60 text-[10px] font-bold uppercase tracking-widest leading-relaxed mb-8">
-                {settings.isPremium ? 'Manage your subscription and billing methods below.' : 'Unlock 120m sessions, all heroes, and ad-free focus.'}
+                {settings.isPremium || settings.isRoyal ? 'Manage your subscription and billing methods below.' : 'Unlock 120m sessions, all heroes, and ad-free focus.'}
               </p>
               
               <button 
                 onClick={() => setActiveSection('billing')}
                 className="w-full bg-white text-slate-900 py-5 rounded-[2rem] font-black text-xs uppercase tracking-widest flex items-center justify-center gap-2 shadow-xl active:scale-95 transition-all"
               >
-                {settings.isPremium ? 'Manage Billing' : 'Upgrade Now'} <CreditCard size={14} />
+                {(settings.isPremium || settings.isRoyal) ? 'Manage Billing' : 'Upgrade Now'} <CreditCard size={14} />
               </button>
+            </div>
+
+            {/* Royal Premium Card (Under Ultra) */}
+            <div className={`rounded-[3rem] p-8 text-white relative overflow-hidden shadow-2xl transition-all ${settings.isRoyal ? 'bg-slate-900 border-2 border-amber-400' : 'bg-gradient-to-br from-amber-400 via-amber-200 to-amber-600 border border-amber-500/30'}`}>
+              <div className="absolute top-0 right-0 w-32 h-32 bg-white/20 blur-3xl rounded-full"></div>
+              <div className="flex items-center gap-2 mb-4">
+                 <Crown className="text-amber-800 fill-amber-800" size={32} />
+                 <WifiOff className="text-amber-800" size={24} />
+              </div>
+              <h3 className={`text-2xl font-black italic uppercase tracking-tighter mb-2 ${settings.isRoyal ? 'text-white' : 'text-amber-900'}`}>
+                {settings.isRoyal ? 'Royal Active' : 'Go Royal Scholar'}
+              </h3>
+              <p className={`text-[10px] font-bold uppercase tracking-widest leading-relaxed mb-8 ${settings.isRoyal ? 'text-slate-400' : 'text-amber-800/70'}`}>
+                {settings.isRoyal ? 'True Offline Mode and full elite access enabled.' : 'Everything in Premium + Full Offline Use. Study anywhere, anytime.'}
+              </p>
+              
+              <button 
+                onClick={() => setActiveSection('billing')}
+                className={`w-full py-5 rounded-[2rem] font-black text-xs uppercase tracking-widest flex items-center justify-center gap-2 shadow-xl active:scale-95 transition-all ${settings.isRoyal ? 'bg-white text-black' : 'bg-amber-900 text-white shadow-amber-900/40'}`}
+              >
+                {settings.isRoyal ? 'Manage Royal' : 'Activate Royal Tier'} <Zap size={14} fill="currentColor" />
+              </button>
+            </div>
+
+            {/* Account & Security */}
+            <div className="space-y-3">
+              <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4">Account & Security</h4>
+              <div className={`rounded-[2.5rem] border overflow-hidden shadow-sm ${settings.darkMode ? 'bg-white/5 border-white/10' : 'bg-white border-slate-100'}`}>
+                
+                {/* Stay Logged In Toggle */}
+                <div className={`flex items-center justify-between p-5 border-b last:border-0 ${settings.darkMode ? 'border-white/5' : 'border-slate-50'}`}>
+                  <div className="flex items-center gap-4">
+                    <div className={`p-2 rounded-xl ${settings.darkMode ? 'bg-blue-500/20 text-blue-400' : 'bg-blue-50 text-blue-500'}`}>
+                      <Lock size={18} />
+                    </div>
+                    <span className="text-sm font-bold">Stay Logged In</span>
+                  </div>
+                  <Toggle 
+                    active={settings.rememberMe} 
+                    onClick={() => onUpdate({ rememberMe: !settings.rememberMe })} 
+                  />
+                </div>
+
+                {/* Guardian Link Portal */}
+                <button 
+                  onClick={() => onNavigate?.(AppRoute.GUARDIAN)}
+                  className={`w-full flex items-center justify-between p-5 border-b last:border-0 group ${settings.darkMode ? 'border-white/5 hover:bg-white/5' : 'border-slate-50 hover:bg-slate-50'}`}
+                >
+                  <div className="flex items-center gap-4">
+                    <div className={`p-2 rounded-xl ${settings.darkMode ? 'bg-emerald-500/20 text-emerald-400' : 'bg-emerald-50 text-emerald-600'}`}>
+                      <Link size={18} />
+                    </div>
+                    <span className="text-sm font-bold">Guardian Portal</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className={`text-[8px] font-black uppercase tracking-widest ${settings.guardianLinked ? 'text-emerald-500' : 'text-slate-400'}`}>
+                      {settings.guardianLinked ? 'Linked' : 'Not Setup'}
+                    </span>
+                    <ChevronRight size={18} className="text-slate-300 group-hover:translate-x-1 transition-transform" />
+                  </div>
+                </button>
+              </div>
             </div>
 
             {/* Quick Preferences */}
@@ -212,11 +272,11 @@ const SettingsView: React.FC<SettingsViewProps> = ({ settings, onUpdate, onClose
               onClick={() => setActiveSection('main')}
               className="flex items-center gap-2 text-slate-400 font-black text-[10px] uppercase tracking-widest"
             >
-              <ChevronRight size={14} className="rotate-180" /> Back to Settings
+              <ChevronLeft size={14} /> Back to Settings
             </button>
 
             <div className="text-center">
-              <h2 className="text-3xl font-black tracking-tighter mb-2 italic uppercase">Ultra Billing</h2>
+              <h2 className="text-3xl font-black tracking-tighter mb-2 italic uppercase">Tier Selection</h2>
               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Select your payment route</p>
             </div>
 
@@ -244,7 +304,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({ settings, onUpdate, onClose
                   <ShieldCheck className="text-emerald-500" size={24} />
                 </div>
                 <p className="text-[10px] font-bold text-slate-500 uppercase leading-relaxed">
-                  All transactions are handled through secure, encrypted tunnels powered by RevenueCat & Stripe.
+                  All transactions are handled through secure, encrypted tunnels powered by our trusted payment partners.
                 </p>
               </div>
             </div>
@@ -253,12 +313,20 @@ const SettingsView: React.FC<SettingsViewProps> = ({ settings, onUpdate, onClose
             <div className="space-y-4">
               <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4">Current Plans</h4>
               {PREMIUM_PLANS.map(plan => (
-                <div key={plan.id} className={`p-6 rounded-[2.5rem] border shadow-sm flex items-center justify-between group ${settings.darkMode ? 'bg-white/5 border-white/10' : 'bg-white border-slate-100'}`}>
+                <div key={plan.id} className={`p-6 rounded-[2.5rem] border shadow-sm flex items-center justify-between group ${plan.royal ? 'border-amber-400 bg-amber-50/50' : settings.darkMode ? 'bg-white/5 border-white/10' : 'bg-white border-slate-100'}`}>
                   <div>
-                    <h3 className="font-black uppercase text-[10px] tracking-widest mb-1">{plan.label}</h3>
-                    <p className="text-xl font-black text-indigo-600">{plan.usd} <span className="text-[10px] text-slate-400 font-bold uppercase">/ {plan.billing}</span></p>
+                    <h3 className={`font-black uppercase text-[10px] tracking-widest mb-1 ${plan.royal ? 'text-amber-600' : ''}`}>{plan.label}</h3>
+                    <p className={`text-xl font-black ${plan.royal ? 'text-amber-700' : 'text-indigo-600'}`}>{plan.usd} <span className="text-[10px] text-slate-400 font-bold uppercase">/ {plan.billing}</span></p>
+                    {plan.royal && <p className="text-[8px] font-black text-amber-500 uppercase mt-1">Includes Offline Mode</p>}
                   </div>
-                  <button className="px-6 py-3 bg-slate-900 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg active:scale-95 transition-all">
+                  <button 
+                    onClick={() => {
+                      if (plan.royal) onUpdate({ isRoyal: true, isPremium: true });
+                      else onUpdate({ isPremium: true, isRoyal: false });
+                      setActiveSection('main');
+                    }}
+                    className={`px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg active:scale-95 transition-all ${plan.royal ? 'bg-amber-500 text-white' : 'bg-slate-900 text-white'}`}
+                  >
                     Select
                   </button>
                 </div>
@@ -274,7 +342,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({ settings, onUpdate, onClose
               onClick={() => setActiveSection('main')}
               className="flex items-center gap-2 text-slate-400 font-black text-[10px] uppercase tracking-widest"
             >
-              <ChevronRight size={14} className="rotate-180" /> Back to Settings
+              <ChevronLeft size={14} /> Back to Settings
             </button>
 
             <div className="flex gap-2">

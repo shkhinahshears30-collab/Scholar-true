@@ -1,12 +1,11 @@
-
 import React, { useState } from 'react';
-import { Shield, Check, Sparkles, Zap, KeyRound, Terminal, X, GraduationCap, ChevronRight, Calendar, Scale, Mail, Lock, User, BookOpen, GraduationCap as UniIcon, AlertCircle, Eye, EyeOff, Globe } from 'lucide-react';
+import { Shield, Check, Sparkles, Zap, KeyRound, Terminal, X, GraduationCap, ChevronRight, Calendar, Scale, Mail, Lock, User, BookOpen, GraduationCap as UniIcon, AlertCircle, Eye, EyeOff, Globe, ShieldCheck, ChevronLeft } from 'lucide-react';
 import { getTranslation } from '../services/i18n';
 import { LANG_OPTIONS } from '../constants';
 
 interface WelcomeScreenProps {
-  onComplete: (userName: string, profilePic: string, language: string, age: number, guardianChoice: boolean) => void;
-  onUnlockPremium?: () => void;
+  onComplete: (userName: string, profilePic: string, language: string, age: number, guardianChoice: boolean, rememberMe: boolean) => void;
+  onUnlockPremium?: (isRoyal?: boolean) => void;
 }
 
 const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onComplete, onUnlockPremium }) => {
@@ -15,6 +14,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onComplete, onUnlockPremi
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(true);
   const [profilePic, setProfilePic] = useState('🎓');
   const [selectedLang, setSelectedLang] = useState('en');
   const [age, setAge] = useState<number>(14);
@@ -26,7 +26,6 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onComplete, onUnlockPremi
   const [secretCode, setSecretCode] = useState('');
   const [unlockSuccess, setUnlockSuccess] = useState(false);
   
-  // Validation states
   const [error, setError] = useState<string | null>(null);
 
   const t = (key: string) => getTranslation(selectedLang, key);
@@ -68,7 +67,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onComplete, onUnlockPremi
 
   const handleStart = () => {
     if (userName.trim() && agreed && guardianChoice !== null && studyMode) {
-      onComplete(userName, profilePic, selectedLang, age, guardianChoice);
+      onComplete(userName, profilePic, selectedLang, age, guardianChoice, rememberMe);
     }
   };
 
@@ -78,6 +77,16 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onComplete, onUnlockPremi
       setUnlockSuccess(true);
       setTimeout(() => {
         if (onUnlockPremium) onUnlockPremium();
+        setShowSecretPanel(false);
+        setSecretCode('');
+        setUnlockSuccess(false);
+      }, 1200);
+    }
+    // ROYAL PREMIUM SECRET CODE
+    if (val === "2059") {
+      setUnlockSuccess(true);
+      setTimeout(() => {
+        if (onUnlockPremium) onUnlockPremium(true);
         setShowSecretPanel(false);
         setSecretCode('');
         setUnlockSuccess(false);
@@ -111,14 +120,13 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onComplete, onUnlockPremi
     <div className="min-h-screen bg-black text-white flex flex-col items-center justify-start overflow-y-auto no-scrollbar relative">
       <div className="fixed inset-0 z-0 bg-black">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(79,70,229,0.1),transparent_70%)]"></div>
-        {/* Much Brighter Fireworks for the First Page */}
         {step === 1 && (
-          <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-100">
-            <div className="firework" style={{ left: '15%', top: '20%', animationDelay: '0s' }}></div>
-            <div className="firework" style={{ left: '85%', top: '35%', animationDelay: '0.4s' }}></div>
-            <div className="firework" style={{ left: '50%', top: '15%', animationDelay: '1.2s' }}></div>
-            <div className="firework" style={{ left: '25%', top: '50%', animationDelay: '0.8s' }}></div>
-            <div className="firework" style={{ left: '75%', top: '60%', animationDelay: '1.6s' }}></div>
+          <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-100 z-0">
+            <div className="firework firework-gold" style={{ left: '20%', animationDelay: '0s' }}></div>
+            <div className="firework firework-blue" style={{ left: '80%', animationDelay: '0.6s' }}></div>
+            <div className="firework firework-gold" style={{ left: '50%', animationDelay: '1.2s' }}></div>
+            <div className="firework firework-blue" style={{ left: '35%', animationDelay: '1.8s' }}></div>
+            <div className="firework firework-gold" style={{ left: '65%', animationDelay: '2.4s' }}></div>
           </div>
         )}
       </div>
@@ -150,7 +158,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onComplete, onUnlockPremi
         </div>
       )}
 
-      <div className="w-full max-w-sm space-y-6 animate-in fade-in zoom-in-95 duration-700 relative z-10 px-6 pt-12 pb-32">
+      <div className="w-full max-sm space-y-6 animate-in fade-in zoom-in-95 duration-700 relative z-10 px-6 pt-12 pb-32">
         {step === 1 && (
           <>
             <div className="text-center">
@@ -164,21 +172,20 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onComplete, onUnlockPremi
               <p className="text-slate-400 text-[9px] font-black uppercase tracking-[0.4em]">{t('welcome_subtitle')}</p>
             </div>
 
-            {/* Smaller Enabled Language Selection Panel */}
-            <div className="space-y-3 bg-white/5 p-4 rounded-3xl border border-white/10 backdrop-blur-md mb-2">
-               <div className="flex items-center gap-2 mb-2 px-1">
-                 <Globe size={12} className="text-indigo-400" />
-                 <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">{t('select_lang')}</span>
+            <div className="space-y-2.5 bg-white/5 p-3 rounded-2xl border border-white/10 backdrop-blur-md mb-2">
+               <div className="flex items-center gap-1.5 mb-1.5 px-1">
+                 <Globe size={10} className="text-indigo-400" />
+                 <span className="text-[8px] font-black uppercase tracking-[0.2em] text-slate-500">{t('select_lang')}</span>
                </div>
-               <div className="grid grid-cols-4 gap-2">
+               <div className="grid grid-cols-4 gap-1.5">
                  {LANG_OPTIONS.slice(0, 8).map(lang => (
                    <button
                      key={lang.id}
                      onClick={() => setSelectedLang(lang.id)}
-                     className={`flex flex-col items-center justify-center py-2 rounded-xl border-2 transition-all ${selectedLang === lang.id ? 'bg-white border-white text-black scale-105 shadow-md' : 'bg-black/40 border-white/5 text-slate-600 hover:border-white/20'}`}
+                     className={`flex flex-col items-center justify-center py-1.5 rounded-xl border transition-all ${selectedLang === lang.id ? 'bg-white border-white text-black shadow-sm' : 'bg-black/40 border-white/5 text-slate-600 hover:border-white/20'}`}
                    >
-                     <span className="text-base">{lang.flag}</span>
-                     <span className="text-[7px] font-black uppercase mt-0.5">{lang.id}</span>
+                     <span className="text-sm">{lang.flag}</span>
+                     <span className="text-[6px] font-black uppercase mt-0.5">{lang.id}</span>
                    </button>
                  ))}
                </div>
@@ -222,6 +229,16 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onComplete, onUnlockPremi
                   >
                     {showPassword ? <EyeOff size={14} /> : <Eye size={14} />}
                   </button>
+                </div>
+
+                <div className="flex items-center gap-3 pt-2 px-2">
+                  <button 
+                    onClick={() => setRememberMe(!rememberMe)} 
+                    className={`w-10 h-6 rounded-full relative transition-all duration-300 ${rememberMe ? 'bg-indigo-600 shadow-[0_0_10px_rgba(79,70,229,0.5)]' : 'bg-white/10'}`}
+                  >
+                    <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all duration-300 ${rememberMe ? 'left-5' : 'left-1'}`} />
+                  </button>
+                  <span className="text-[8px] font-black uppercase tracking-widest text-slate-500">Stay logged in on this device</span>
                 </div>
               </div>
 
@@ -283,6 +300,26 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onComplete, onUnlockPremi
                 </div>
               </div>
 
+              <div className="space-y-3">
+                <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-4 text-left">Guardian Sync (Optional)</p>
+                <div className="grid grid-cols-2 gap-3">
+                  <button 
+                    onClick={() => setGuardianChoice(true)}
+                    className={`p-6 rounded-[2rem] border-2 transition-all flex flex-col items-center gap-3 ${guardianChoice === true ? 'bg-emerald-500 border-emerald-400 text-white' : 'bg-white/5 border-white/10 text-slate-500 hover:bg-white/10'}`}
+                  >
+                    <ShieldCheck size={24} />
+                    <span className="text-[10px] font-black uppercase tracking-widest">Link Device</span>
+                  </button>
+                  <button 
+                    onClick={() => setGuardianChoice(false)}
+                    className={`p-6 rounded-[2rem] border-2 transition-all flex flex-col items-center gap-3 ${guardianChoice === false ? 'bg-white border-white text-black' : 'bg-white/5 border-white/10 text-slate-500 hover:bg-white/10'}`}
+                  >
+                    <User size={24} />
+                    <span className="text-[10px] font-black uppercase tracking-widest">Solo Focus</span>
+                  </button>
+                </div>
+              </div>
+
               <div className="flex flex-col items-center gap-6 pt-2">
                 <div className="w-24 h-24 bg-gradient-to-br from-indigo-600 to-purple-800 rounded-[2.2rem] flex items-center justify-center text-5xl shadow-[0_0_40px_rgba(79,70,229,0.3)] border border-white/20">
                   {profilePic}
@@ -316,7 +353,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onComplete, onUnlockPremi
 
               <button 
                 onClick={handleStart}
-                disabled={guardianChoice === null && !studyMode}
+                disabled={!studyMode || guardianChoice === null}
                 className="w-full bg-white text-black py-7 rounded-[2.5rem] font-black text-xl shadow-2xl disabled:opacity-20 flex items-center justify-center gap-3 active:scale-95 transition-all"
               >
                 {t('start_focus_btn')} <Zap size={22} fill="currentColor" />
@@ -324,9 +361,9 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onComplete, onUnlockPremi
 
               <button 
                 onClick={() => setStep(1)}
-                className="w-full text-slate-600 font-black text-[10px] uppercase tracking-widest py-2"
+                className="w-full text-slate-600 font-black text-[10px] uppercase tracking-widest py-2 flex items-center justify-center gap-2"
               >
-                Go Back
+                <ChevronLeft size={14} /> Go Back
               </button>
             </div>
           </div>

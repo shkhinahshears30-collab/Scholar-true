@@ -1,6 +1,5 @@
-
 import React from 'react';
-import { Trophy, Medal, MapPin, Search, Users, Zap } from 'lucide-react';
+import { Trophy, Medal, MapPin, Search, Users, Zap, ChevronLeft } from 'lucide-react';
 
 interface LeaderboardProps {
   currentUser: {
@@ -8,9 +7,10 @@ interface LeaderboardProps {
     pic: string;
     focusTime: number;
   };
+  onClose?: () => void;
 }
 
-const Leaderboard: React.FC<LeaderboardProps> = ({ currentUser }) => {
+const Leaderboard: React.FC<LeaderboardProps> = ({ currentUser, onClose }) => {
   // Simulated Nationwide data
   const competitors = [
     { id: '1', name: 'FocusMaster_99', pic: '🔥', score: 12450, city: 'New York' },
@@ -29,13 +29,18 @@ const Leaderboard: React.FC<LeaderboardProps> = ({ currentUser }) => {
 
   return (
     <div className="p-6 pb-24 min-h-screen">
-      <div className="flex items-center gap-3 mb-8">
-        <div className="p-3 bg-amber-500 text-white rounded-2xl shadow-lg animate-pulse">
-          <Trophy size={24} />
-        </div>
-        <div>
-          <h1 className="text-2xl font-black tracking-tighter">Nationwide Rank</h1>
-          <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Compete with the best</p>
+      <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center gap-3">
+          <button onClick={onClose} className="p-2 -ml-2 text-slate-400 hover:text-indigo-600 transition-colors">
+            <ChevronLeft size={24} />
+          </button>
+          <div className="p-2.5 bg-amber-500 text-white rounded-2xl shadow-lg animate-pulse">
+            <Trophy size={20} />
+          </div>
+          <div>
+            <h1 className="text-xl font-black tracking-tighter uppercase italic">Nationwide Rank</h1>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Compete with the best</p>
+          </div>
         </div>
       </div>
 
@@ -80,7 +85,7 @@ const Leaderboard: React.FC<LeaderboardProps> = ({ currentUser }) => {
         <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={16} />
         <input 
           placeholder="Search scholars..." 
-          className="w-full bg-white border border-slate-100 rounded-2xl py-3 pl-12 pr-4 text-xs font-bold text-slate-800"
+          className="w-full bg-white border border-slate-100 rounded-2xl py-3 pl-12 pr-4 text-xs font-bold text-slate-800 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
         />
       </div>
 
