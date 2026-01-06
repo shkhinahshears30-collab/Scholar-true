@@ -1,0 +1,16 @@
+codemagic.yaml
+workflows:
+  android-release:
+    name: Scholar Android Release
+    environment:
+      android_signing:
+        - scholar_keystore
+    scripts:
+      - name: Install dependencies
+        script: |
+          npm install
+      - name: Build Android AAB
+        script: |
+          ./gradlew bundleRelease
+    artifacts:
+      - app/build/outputs/**/*.aab
