@@ -48,7 +48,6 @@ export interface UserSettings {
   language: string;
   darkMode: boolean;
   notificationsEnabled: boolean;
-  musicEnabled: boolean;
   privacyLockEnabled: boolean;
   guardianLinked: boolean;
   guardianCode?: string;

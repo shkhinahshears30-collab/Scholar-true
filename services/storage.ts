@@ -13,7 +13,6 @@ const DEFAULT_SETTINGS: UserSettings = {
   language: 'en',
   darkMode: false,
   notificationsEnabled: true,
-  musicEnabled: true,
   privacyLockEnabled: false,
   guardianLinked: false,
   guardianCode: undefined,
@@ -64,7 +63,6 @@ export const loadSettings = (): UserSettings => {
   if (!settings.unlockedHabitats) settings.unlockedHabitats = ['default'];
   if (!settings.selectedHabitat) settings.selectedHabitat = 'default';
   if (!settings.dashboardCustomization) settings.dashboardCustomization = { themeColor: '#fcfcfd', stickers: [] };
-  if (settings.musicEnabled === undefined) settings.musicEnabled = true;
   
   return settings;
 };

@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { 
-  ShieldCheck, Clock, Crown, Zap, Flame, Star, GraduationCap, Grid, Palette, Book, Globe, UserPlus, Shield, Coffee, Clapperboard, Radio, Lock, User, BarChart3, Play, Rocket, Mail, Smartphone, CheckCircle2, Target, X, ScanText, Rabbit, BookOpen, BrainCircuit, Link as LinkIcon, Library as LibraryIcon, Gamepad2, Sparkles, CalendarDays, Trophy, MessageSquareText, Layout, Pencil, Trash2, RotateCcw, PenLine, ChevronDown, ChevronLeft, Pause, Coffee as BreakIcon, Music as MusicIcon, Volume2, VolumeX, Headphones, AudioLines
+  Clock, Crown, Zap, Flame, Star, GraduationCap, Grid, Palette, Book, Globe, UserPlus, Shield, Coffee, Clapperboard, Radio, Lock, User, BarChart3, Play, Rocket, Mail, Smartphone, CheckCircle2, Target, X, ScanText, Rabbit, BookOpen, BrainCircuit, Link as LinkIcon, Library as LibraryIcon, Gamepad2, Sparkles, CalendarDays, Trophy, MessageSquareText, Layout, Pencil, Trash2, RotateCcw, PenLine, ChevronDown, ChevronLeft, Pause, Coffee as BreakIcon, Volume2, VolumeX, Headphones, AudioLines
 } from 'lucide-react';
 import { AppRoute, UserSettings, FocusSession, StudyMode } from './types';
 import { ALL_COMPANIONS, MAX_TIME_FREE, MAX_TIME_PREMIUM, MAX_TIME_ROYAL, HABITATS } from './constants';
@@ -61,9 +61,7 @@ const App: React.FC = () => {
   const [isCustomizing, setIsCustomizing] = useState(false);
   const [draggingStickerId, setDraggingStickerId] = useState<string | null>(null);
   const [currentAffirmation, setCurrentAffirmation] = useState(AFFIRMATIONS[0]);
-  const [musicStalled, setMusicStalled] = useState(false); 
   const dashboardRef = useRef<HTMLDivElement>(null);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
   
   const urlParams = new URLSearchParams(window.location.search);
   const isGuardianView = urlParams.get('view') === 'guardian';
@@ -86,63 +84,6 @@ const App: React.FC = () => {
     const element = document.getElementById(elementId);
     element?.scrollIntoView({ behavior: 'smooth' });
   };
-
-  // World-Class Background Music Controller
-  useEffect(() => {
-    if (!audioRef.current) {
-      // Premium Deep Focus Brain Waves track - High quality ambient
-      audioRef.current = new Audio('https://cdn.pixabay.com/audio/2023/06/05/audio_51af396265.mp3'); 
-      audioRef.current.loop = true;
-      audioRef.current.volume = 0.12;
-    }
-
-    const syncPlayback = () => {
-      if (settings.musicEnabled) {
-        audioRef.current?.play()
-          .then(() => setMusicStalled(false))
-          .catch(() => {
-            // Autoplay blocked by browser policy
-            setMusicStalled(true);
-          });
-      } else {
-        audioRef.current?.pause();
-        setMusicStalled(false);
-      }
-    };
-
-    syncPlayback();
-
-    return () => {
-      if (audioRef.current) {
-        audioRef.current.pause();
-      }
-    };
-  }, [settings.musicEnabled]);
-
-  // Robust Interaction-Based Autoplay Activation
-  useEffect(() => {
-    const handleInteraction = () => {
-      if (settings.musicEnabled && audioRef.current && audioRef.current.paused) {
-        audioRef.current.play()
-          .then(() => {
-            setMusicStalled(false);
-            console.log("Scholar Ambience Synchronized");
-          })
-          .catch(() => {});
-      }
-    };
-    
-    // Listen for any standard user interaction to wake up the audio context
-    window.addEventListener('mousedown', handleInteraction, { once: true });
-    window.addEventListener('touchstart', handleInteraction, { once: true });
-    window.addEventListener('keydown', handleInteraction, { once: true });
-    
-    return () => {
-      window.removeEventListener('mousedown', handleInteraction);
-      window.removeEventListener('touchstart', handleInteraction);
-      window.removeEventListener('keydown', handleInteraction);
-    };
-  }, [settings.musicEnabled]);
 
   // Timer logic for focus segments and breaks
   useEffect(() => {
@@ -362,8 +303,7 @@ const App: React.FC = () => {
             handleUpdateSettings({ 
               userName, profilePic, language, age, rememberMe,
               isRoyal: settings.isRoyal, guardianLinked: guardianChoice, unlockedHabitats: ['default'],
-              studyMode: age >= 18 ? 'university' : 'school',
-              musicEnabled: true // Enable by default for a premium feel
+              studyMode: age >= 18 ? 'university' : 'school'
             });
             if (guardianChoice) setRoute(AppRoute.GUARDIAN);
             else setRoute(AppRoute.DASHBOARD);
@@ -413,41 +353,12 @@ const App: React.FC = () => {
                 <div id="profile-section" className="flex justify-between items-start mb-4 pr-16 relative z-10">
                   <div className="flex items-center gap-3">
                     <button onClick={() => setRoute(AppRoute.SETTINGS)} className="w-12 h-12 bg-indigo-600 rounded-full flex items-center justify-center text-2xl shadow-lg border-2 border-white/20 hover:scale-110 transition-transform active:scale-95">{settings.profilePic}</button>
-                    <div><h1 className="text-xl font-black text-slate-900 tracking-tighter uppercase italic">Scholar {settings.userName?.split(' ')[0]}</h1><p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{t('ready_focus')}</p></div>
+                    <div><h1 className="text-xl font-black text-slate-900 tracking-tighter uppercase italic text-shadow-sm">Scholar {settings.userName?.split(' ')[0]}</h1><p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{t('ready_focus')}</p></div>
                   </div>
                   <div className="flex items-center gap-2">
                     <div className="flex items-center gap-1.5 bg-orange-50 px-3 py-1 rounded-full border border-orange-100 shadow-sm">
                       <Flame size={14} className="text-orange-500 fill-orange-500" />
                       <span className="text-xs font-black text-orange-600 tabular-nums">{settings.currentStreak}</span>
-                    </div>
-                    {/* Immersive Music Controller Toggle */}
-                    <div className="flex items-center gap-1.5">
-                      <button 
-                        onClick={() => handleUpdateSettings({ musicEnabled: !settings.musicEnabled })}
-                        className={`p-2.5 rounded-full border transition-all active:scale-90 shadow-xl flex items-center gap-1.5 ${settings.musicEnabled ? 'bg-indigo-600 text-white border-indigo-400 shadow-indigo-500/50' : 'bg-white text-slate-300 border-slate-100'}`}
-                        title={settings.musicEnabled ? "Pause Focus Ambience" : "Play Focus Ambience"}
-                      >
-                        {settings.musicEnabled ? (
-                          <>
-                            <AudioLines size={14} className="animate-pulse" />
-                            <div className="flex gap-0.5 items-end h-3">
-                               <div className="w-0.5 bg-white animate-[music_0.8s_ease-in-out_infinite]" style={{ height: '60%' }}></div>
-                               <div className="w-0.5 bg-white animate-[music_1.2s_ease-in-out_infinite]" style={{ height: '100%' }}></div>
-                               <div className="w-0.5 bg-white animate-[music_1s_ease-in-out_infinite]" style={{ height: '80%' }}></div>
-                            </div>
-                          </>
-                        ) : (
-                          <VolumeX size={14} />
-                        )}
-                      </button>
-                      {musicStalled && settings.musicEnabled && (
-                        <button 
-                          onClick={() => audioRef.current?.play().then(() => setMusicStalled(false))}
-                          className="bg-emerald-500 text-white px-3 py-2 rounded-full text-[8px] font-black uppercase tracking-widest animate-bounce shadow-lg flex items-center gap-1"
-                        >
-                          <Headphones size={10} /> Sync Audio
-                        </button>
-                      )}
                     </div>
                   </div>
                 </div>
@@ -723,9 +634,8 @@ const App: React.FC = () => {
         </>
       )}
       <style>{`
-        @keyframes music {
-          0%, 100% { height: 40%; }
-          50% { height: 100%; }
+        .text-shadow-sm {
+          text-shadow: 0 1px 2px rgba(0,0,0,0.05);
         }
       `}</style>
     </div>

@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { 
   X, User, Shield, Bell, CreditCard, ChevronRight, Crown, Zap, 
   Settings as SettingsIcon, LogOut, CheckCircle2, DollarSign,
-  Globe, Moon, Smartphone, Lock, ShieldCheck, ChevronDown, Scale, FileText, WifiOff, Link, ChevronLeft, Music as MusicIcon
+  Globe, Moon, Smartphone, Lock, ShieldCheck, ChevronDown, Scale, FileText, WifiOff, Link, ChevronLeft, Music, Radio
 } from 'lucide-react';
 import { UserSettings, AppRoute } from '../types';
 import { PREMIUM_PLANS, LANG_OPTIONS } from '../constants';
@@ -181,19 +181,6 @@ const SettingsView: React.FC<SettingsViewProps> = ({ settings, onUpdate, onClose
                   <Toggle 
                     active={settings.notificationsEnabled} 
                     onClick={() => onUpdate({ notificationsEnabled: !settings.notificationsEnabled })} 
-                  />
-                </div>
-
-                <div className={`flex items-center justify-between p-5 border-b last:border-0 ${settings.darkMode ? 'border-white/5' : 'border-slate-50'}`}>
-                  <div className="flex items-center gap-4">
-                    <div className={`p-2 rounded-xl ${settings.darkMode ? 'bg-purple-500/20 text-purple-400' : 'bg-slate-100 text-slate-400'}`}>
-                      <MusicIcon size={18} />
-                    </div>
-                    <span className="text-sm font-bold">Scholar Ambience</span>
-                  </div>
-                  <Toggle 
-                    active={settings.musicEnabled} 
-                    onClick={() => onUpdate({ musicEnabled: !settings.musicEnabled })} 
                   />
                 </div>
 
@@ -381,7 +368,7 @@ const SettingsView: React.FC<SettingsViewProps> = ({ settings, onUpdate, onClose
                       <p>By using Scholar, you agree to become the best version of yourself through consistent, focused study.</p>
                       <section>
                         <h4 className="text-rose-600 font-black uppercase mb-1">Acceptable Use</h4>
-                        <p>The Literacy AI and Tutor Hero features are for educational support. Do not use these tools to cheat or generate prohibited content.</p>
+                        <p>The Literacy AI and Tutor Hero features for educational support. Do not use these tools to cheat or generate prohibited content.</p>
                       </section>
                       <section>
                         <h4 className="text-rose-600 font-black uppercase mb-1">No Guarantee</h4>
