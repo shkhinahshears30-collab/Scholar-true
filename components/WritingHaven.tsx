@@ -1,6 +1,5 @@
-
 import React, { useState, useEffect, useRef } from 'react';
-import { X, PenLine, Save, Download, Sparkles, Trash2, Bold, Italic, AlignLeft, AlignCenter, AlignRight, Loader2, Crown, Maximize2, Minimize2, Clock, Hash, Palette, Coffee, Wind, Moon, Sun, BookOpen, CheckCircle2, Target, Eraser, Info, List, ListOrdered, ChevronLeft } from 'lucide-react';
+import { X, PenLine, Save, Download, Sparkles, Trash2, Bold, Italic, AlignLeft, AlignCenter, AlignRight, Loader2, Crown, Maximize2, Minimize2, Clock, Hash, Palette, Wind, BookOpen, CheckCircle2, Target, Eraser, List, ChevronLeft } from 'lucide-react';
 import { GoogleGenAI } from '@google/genai';
 
 interface WritingHavenProps {
@@ -12,7 +11,7 @@ interface WritingHavenProps {
 interface Draft {
   id: string;
   title: string;
-  content: string; // Now stores HTML for rich text
+  content: string;
   updatedAt: string;
   theme: HavenTheme;
   goal: number;
@@ -52,7 +51,6 @@ const WritingHaven: React.FC<WritingHavenProps> = ({ isPremium, onClose, onGoPre
     localStorage.setItem('scholar_haven_drafts', JSON.stringify(drafts));
   }, [drafts]);
 
-  // Handle typing state for UI fading
   useEffect(() => {
     const now = Date.now();
     const timeout = setTimeout(() => {
@@ -61,12 +59,10 @@ const WritingHaven: React.FC<WritingHavenProps> = ({ isPremium, onClose, onGoPre
     return () => clearTimeout(timeout);
   }, [lastTypedTime]);
 
-  // Focus Pulse logic: reacts to typing activity
   useEffect(() => {
     const interval = setInterval(() => {
       const now = Date.now();
-      const diff = now - lastTypedTime;
-      if (diff < 1500) {
+      if (now - lastTypedTime < 1500) {
         setFocusPulse(prev => Math.min(100, prev + 3));
       } else {
         setFocusPulse(prev => Math.max(0, prev - 2));
@@ -115,11 +111,7 @@ const WritingHaven: React.FC<WritingHavenProps> = ({ isPremium, onClose, onGoPre
   };
 
   const deleteDraft = (id: string) => {
-    if (drafts.length <= 1) {
-        if(editorRef.current) editorRef.current.innerHTML = '';
-        updateContent();
-        return;
-    }
+    if (drafts.length <= 1) return;
     const next = drafts.filter(d => d.id !== id);
     setDrafts(next);
     setActiveDraftId(next[0].id);
@@ -128,10 +120,7 @@ const WritingHaven: React.FC<WritingHavenProps> = ({ isPremium, onClose, onGoPre
   const handleSummonMuse = async () => {
     if (!isPremium) { onGoPremium(); return; }
     const plainText = editorRef.current?.innerText || '';
-    if (!plainText.trim()) {
-        alert("The Muse needs a seed. Start typing first!");
-        return;
-    }
+    if (!plainText.trim()) return;
 
     setIsAILoading(true);
     try {
@@ -141,12 +130,11 @@ const WritingHaven: React.FC<WritingHavenProps> = ({ isPremium, onClose, onGoPre
         contents: `You are the Scholar Muse. Based on the following text, write the next 2 sentences in the same style and tone. Keep formatting minimal: "${plainText.slice(-800)}"`,
       });
       if (response.text && editorRef.current) {
-        const newPart = `<span> ${response.text}</span>`;
-        editorRef.current.innerHTML += newPart;
+        editorRef.current.innerHTML += `<span> ${response.text}</span>`;
         updateContent();
       }
     } catch (e) {
-      alert("The Muse is silent right now. Try again.");
+      console.error(e);
     } finally {
       setIsAILoading(false);
     }
@@ -165,7 +153,7 @@ const WritingHaven: React.FC<WritingHavenProps> = ({ isPremium, onClose, onGoPre
       <div className={`p-8 flex items-center justify-between shrink-0 border-b transition-all duration-1000 ${isTyping ? 'opacity-10 pointer-events-none' : 'opacity-100'} ${isFocusMode ? 'hidden' : ''} ${activeDraft.theme === 'ivory' ? 'bg-white border-slate-100' : 'bg-black/20 border-white/5 backdrop-blur-md'}`}>
         <div className="flex items-center gap-4">
           <button onClick={onClose} className={`p-4 rounded-2xl transition-all ${activeDraft.theme === 'ivory' ? 'bg-slate-50 text-slate-400 hover:text-slate-900' : 'bg-white/5 text-white/40 hover:text-white'}`}><ChevronLeft size={28} /></button>
-          <div className={`p-4 rounded-[2rem] shadow-xl transition-all duration-500 ${activeDraft.theme === 'ivory' ? 'bg-indigo-600 text-white' : 'bg-white text-indigo-950'} ${focusPulse > 50 ? 'scale-110 rotate-3' : 'scale-100'}`}>
+          <div className={`p-4 rounded-[2rem] shadow-xl transition-all duration-500 ${activeDraft.theme === 'ivory' ? 'bg-indigo-600 text-white' : 'bg-white text-indigo-950'}`}>
             <PenLine size={28} />
           </div>
           <div>
@@ -186,7 +174,7 @@ const WritingHaven: React.FC<WritingHavenProps> = ({ isPremium, onClose, onGoPre
 
       <div className="flex-1 flex overflow-hidden relative">
         
-        {/* Modals (Atmosphere & Goal) */}
+        {/* Modals */}
         {showThemePicker && (
           <div className="absolute inset-0 z-[120] bg-black/60 backdrop-blur-sm flex items-center justify-center animate-in fade-in duration-300">
              <div className="bg-white rounded-[3rem] p-10 w-full max-w-sm shadow-2xl border border-slate-100">
@@ -216,7 +204,7 @@ const WritingHaven: React.FC<WritingHavenProps> = ({ isPremium, onClose, onGoPre
           <div className="absolute inset-0 z-[120] bg-black/60 backdrop-blur-sm flex items-center justify-center animate-in fade-in duration-300">
              <div className="bg-white rounded-[3rem] p-10 w-full max-w-sm shadow-2xl border border-slate-100">
                 <div className="flex justify-between items-center mb-8">
-                   <h3 className="text-xl font-black uppercase tracking-tighter italic">Target Word Count</h3>
+                   <h3 className="text-xl font-black uppercase tracking-tighter italic text-slate-900">Target Word Count</h3>
                    <button onClick={() => setShowGoalPicker(false)} className="text-slate-300 hover:text-slate-900"><X size={24} /></button>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
@@ -268,6 +256,8 @@ const WritingHaven: React.FC<WritingHavenProps> = ({ isPremium, onClose, onGoPre
            <div className={`w-full max-w-3xl min-h-[90vh] p-12 sm:p-20 rounded-[4rem] shadow-2xl transition-all duration-1000 flex flex-col relative overflow-hidden ${currentTheme.paper} ${isFocusMode ? 'scale-[1.02]' : 'scale-100 border border-black/5'}`}>
               
               <div className="absolute inset-0 pointer-events-none opacity-[0.03] bg-[radial-gradient(#000_1.5px,transparent_1.5px)] [background-size:32px_32px]"></div>
+              
+              {/* Word Goal Progress Bar */}
               <div className={`absolute top-0 left-0 h-1.5 transition-all duration-1000 ease-out ${currentTheme.accent.replace('text-', 'bg-')}`} style={{ width: `${goalProgress}%` }} />
 
               <div className="absolute top-12 right-12 opacity-30">
@@ -286,7 +276,6 @@ const WritingHaven: React.FC<WritingHavenProps> = ({ isPremium, onClose, onGoPre
                     <button onClick={() => exec('justifyLeft')} className={`p-3 rounded-xl transition-all ${activeDraft.theme === 'ivory' ? 'hover:bg-slate-50 text-slate-400 hover:text-slate-900' : 'hover:bg-white/5 text-white/30 hover:text-white'}`}><AlignLeft size={18} /></button>
                     <button onClick={() => exec('justifyCenter')} className={`p-3 rounded-xl transition-all ${activeDraft.theme === 'ivory' ? 'hover:bg-slate-50 text-slate-400 hover:text-slate-900' : 'hover:bg-white/5 text-white/30 hover:text-white'}`}><AlignCenter size={18} /></button>
                     <div className={`w-px h-6 mx-2 ${activeDraft.theme === 'ivory' ? 'bg-slate-100' : 'bg-white/5'}`}></div>
-                    <button onClick={() => exec('insertUnorderedList')} className={`p-3 rounded-xl transition-all ${activeDraft.theme === 'ivory' ? 'hover:bg-slate-50 text-slate-400 hover:text-slate-900' : 'hover:bg-white/5 text-white/30 hover:text-white'}`}><List size={18} /></button>
                     <button onClick={() => { if(editorRef.current) editorRef.current.innerHTML = ''; updateContent(); }} className={`p-3 rounded-xl transition-all hover:text-rose-500 ${activeDraft.theme === 'ivory' ? 'text-slate-300' : 'text-white/10'}`} title="Clear Page"><Eraser size={18} /></button>
                  </div>
 
@@ -310,18 +299,28 @@ const WritingHaven: React.FC<WritingHavenProps> = ({ isPremium, onClose, onGoPre
                 dangerouslySetInnerHTML={{ __html: activeDraft.content }}
               />
 
+              {/* Word Goal Progress Visualization */}
               <div className="mt-20 flex flex-col gap-6">
                  <div className="flex justify-between items-end">
                     <div className="flex flex-col gap-1">
                         <span className={`text-[10px] font-black uppercase tracking-[0.3em] opacity-40 ${currentTheme.text}`}>Creative Momentum</span>
                         <div className="flex items-center gap-2"><Wind size={10} className={currentTheme.accent} /><span className={`text-[9px] font-bold uppercase ${currentTheme.text} opacity-20`}>{focusPulse > 80 ? 'Transcendent Flow' : focusPulse > 40 ? 'Steady Progress' : 'Beginning Aura'}</span></div>
                     </div>
-                    <div className="text-right"><span className={`text-[10px] font-black uppercase tracking-[0.2em] ${currentTheme.accent}`}>{wordCount} / {activeDraft.goal || '∞'} WORDS</span></div>
+                    <div className="text-right">
+                        <span className={`text-[10px] font-black uppercase tracking-[0.2em] ${currentTheme.accent}`}>
+                            {wordCount} / {activeDraft.goal || '∞'} WORDS
+                        </span>
+                    </div>
                  </div>
                  <div className={`h-2 rounded-full overflow-hidden transition-all duration-1000 ${activeDraft.theme === 'ivory' ? 'bg-slate-100' : 'bg-white/5'}`}>
                     <div className={`h-full transition-all duration-700 ease-out rounded-full ${activeDraft.theme === 'ivory' ? 'bg-indigo-600 shadow-[0_0_15px_rgba(79,70,229,0.4)]' : 'bg-current shadow-[0_0_15px_currentColor]'}`} style={{ width: `${activeDraft.goal > 0 ? goalProgress : focusPulse}%` }} />
                  </div>
-                 {activeDraft.goal > 0 && wordCount >= activeDraft.goal && <div className="flex items-center justify-center gap-2 animate-bounce mt-2"><CheckCircle2 size={14} className="text-emerald-500" /><span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest">Scholar's Goal Achieved!</span></div>}
+                 {activeDraft.goal > 0 && wordCount >= activeDraft.goal && (
+                   <div className="flex items-center justify-center gap-2 animate-bounce mt-2 text-emerald-500">
+                     <CheckCircle2 size={14} />
+                     <span className="text-[10px] font-black uppercase tracking-widest">Scholar's Goal Achieved!</span>
+                   </div>
+                 )}
               </div>
            </div>
 
@@ -342,7 +341,6 @@ const WritingHaven: React.FC<WritingHavenProps> = ({ isPremium, onClose, onGoPre
       {!isFocusMode && (
         <div className={`absolute bottom-10 right-10 flex flex-col gap-4 items-end animate-in slide-in-from-right-10 duration-700 transition-all ${isTyping ? 'opacity-0 scale-90 translate-x-10' : 'opacity-100 scale-100 translate-x-0'}`}>
            <div className={`p-4 rounded-[2rem] border backdrop-blur-md flex items-center gap-4 transition-all duration-700 ${activeDraft.theme === 'ivory' ? 'bg-white/80 border-slate-100' : 'bg-white/5 border-white/10'}`}>
-              <div className="flex flex-col items-end pr-2 border-r border-current border-opacity-10"><span className={`text-[8px] font-black uppercase tracking-widest opacity-40 ${currentTheme.text}`}>Session Length</span><span className={`text-xs font-black italic ${currentTheme.text}`}>8m 12s</span></div>
               <button className={`p-4 rounded-2xl shadow-xl hover:scale-110 active:scale-95 transition-all group ${activeDraft.theme === 'ivory' ? 'bg-slate-900 text-white' : 'bg-indigo-600 text-white'}`} title="Archive Manuscript" onClick={() => alert("Document exported to Scholar Archive.")}><Download size={20} /></button>
            </div>
            <button className="p-8 bg-slate-900 text-white rounded-[3rem] shadow-[0_20px_60px_rgba(0,0,0,0.4)] hover:scale-105 active:scale-95 transition-all flex items-center gap-6 group border border-white/10"><div className="flex flex-col items-end"><span className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40">Scholar Vault</span><span className="text-sm font-black italic">Haven Synced</span></div><div className="p-4 bg-white/10 rounded-2xl group-hover:rotate-12 transition-transform shadow-inner"><Save size={28} /></div></button>

@@ -1,6 +1,5 @@
-
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, X, Bot, User, Loader2, Sparkles, MessageSquareText, Mic, MicOff, Volume2, UserCircle2, UserCircle, AudioLines, ChevronLeft } from 'lucide-react';
+import { Send, X, Bot, User, Loader2, Sparkles, MessageSquareText, Mic, MicOff, Volume2, UserCircle2, UserCircle, AudioLines, ChevronLeft, Brain } from 'lucide-react';
 import { GoogleGenAI, Modality } from '@google/genai';
 
 interface Message {
@@ -18,11 +17,12 @@ const Infosphere: React.FC<InfosphereProps> = ({ onClose }) => {
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
-  const [isListening, setIsListening] = useState(false);
+  const [isTranscribing, setIsTranscribing] = useState(false);
   const [voiceGender, setVoiceGender] = useState<'male' | 'female'>('female');
   const scrollRef = useRef<HTMLDivElement>(null);
-  const recognitionRef = useRef<any>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
 
   // Manual implementation of raw PCM decoding for Gemini TTS
   function decode(base64: string) {
@@ -60,29 +60,9 @@ const Infosphere: React.FC<InfosphereProps> = ({ onClose }) => {
     }
   }, [messages]);
 
-  useEffect(() => {
-    // Setup Speech Recognition for "Immediate Response"
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (SpeechRecognition) {
-      recognitionRef.current = new SpeechRecognition();
-      recognitionRef.current.continuous = false; // Capture one turn
-      recognitionRef.current.interimResults = false;
-      recognitionRef.current.onresult = (event: any) => {
-        const transcript = event.results[0][0].transcript;
-        if (transcript.trim()) {
-          handleSend(transcript);
-        }
-        setIsListening(false);
-      };
-      recognitionRef.current.onerror = () => setIsListening(false);
-      recognitionRef.current.onend = () => setIsListening(false);
-    }
-  }, []);
-
   const speakResponse = async (text: string) => {
     try {
       const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-      // Kore is the primary female voice, Fenrir is the primary male voice
       const voiceName = voiceGender === 'female' ? 'Kore' : 'Fenrir';
       
       const response = await ai.models.generateContent({
@@ -108,11 +88,6 @@ const Infosphere: React.FC<InfosphereProps> = ({ onClose }) => {
         source.buffer = audioBuffer;
         source.connect(audioContextRef.current.destination);
         source.start();
-        
-        // Visual indicator that AI is talking
-        source.onended = () => {
-          // Could trigger mic again here for true hands-free
-        };
       }
     } catch (e) {
       console.error("TTS Synthesis Error", e);
@@ -130,42 +105,95 @@ const Infosphere: React.FC<InfosphereProps> = ({ onClose }) => {
 
     try {
       const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+      // Use Thinking Mode with Gemini 3 Pro for complex scholarly queries
       const response = await ai.models.generateContent({
-        model: 'gemini-3-flash-preview',
+        model: 'gemini-3-pro-preview',
         contents: [...messages, { role: 'user', text: userMessage }].map(m => ({
           role: m.role,
           parts: [{ text: m.text }]
         })),
         config: {
-          systemInstruction: "You are the Infosphere AI, a supportive academic assistant. Keep responses focused, encouraging, and visionary. Avoid long preambles. If the user is speaking via voice, keep the response concise enough for comfortable listening.",
+          thinkingConfig: { thinkingBudget: 32768 },
+          systemInstruction: "You are the Infosphere AI, a world-class academic intelligence. Use your thinking budget to provide deep, accurate, and concise insights. If responding to voice input, keep the final output brief and professional.",
         }
       });
 
-      const aiText = response.text || "System pulse weak. Please repeat.";
+      const aiText = response.text || "Connection lost. Please re-sync.";
       setMessages(prev => [...prev, { role: 'model', text: aiText }]);
       speakResponse(aiText);
     } catch (error) {
-      setMessages(prev => [...prev, { role: 'model', text: "Connection to the sphere lost. Re-sync required." }]);
+      setMessages(prev => [...prev, { role: 'model', text: "Connection error. Re-sync required." }]);
     } finally {
       setLoading(false);
     }
   };
 
-  const toggleListening = () => {
-    if (isListening) {
-      recognitionRef.current?.stop();
-      setIsListening(false);
-    } else {
-      // Audio feedback for starting
-      if (audioContextRef.current?.state === 'suspended') audioContextRef.current.resume();
-      recognitionRef.current?.start();
-      setIsListening(true);
+  const startTranscription = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = mediaRecorder;
+      audioChunksRef.current = [];
+
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data.size > 0) audioChunksRef.current.push(e.data);
+      };
+
+      mediaRecorder.onstop = async () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        const reader = new FileReader();
+        reader.readAsDataURL(audioBlob);
+        reader.onloadend = async () => {
+          const base64Audio = (reader.result as string).split(',')[1];
+          await processVoiceInput(base64Audio);
+        };
+        stream.getTracks().forEach(track => track.stop());
+      };
+
+      mediaRecorder.start();
+      setIsTranscribing(true);
+    } catch (err) {
+      console.error("Mic access denied", err);
+    }
+  };
+
+  const stopTranscription = () => {
+    if (mediaRecorderRef.current && isTranscribing) {
+      mediaRecorderRef.current.stop();
+      setIsTranscribing(false);
+    }
+  };
+
+  const processVoiceInput = async (base64Data: string) => {
+    setLoading(true);
+    try {
+      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+      // Transcribe audio using gemini-3-flash-preview
+      const response = await ai.models.generateContent({
+        model: 'gemini-3-flash-preview',
+        contents: [
+          {
+            parts: [
+              { inlineData: { data: base64Data, mimeType: 'audio/webm' } },
+              { text: "Transcribe the user's spoken text accurately. Return only the transcription." }
+            ]
+          }
+        ]
+      });
+
+      const transcript = response.text?.trim();
+      if (transcript) {
+        handleSend(transcript);
+      }
+    } catch (err) {
+      console.error("Transcription error", err);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <div className="fixed inset-0 bg-slate-950 z-[110] flex flex-col text-white animate-in slide-in-from-bottom-10 duration-700 overflow-hidden">
-      {/* Dynamic Header */}
       <div className="p-8 pb-4 flex items-center justify-between shrink-0 bg-black/40 border-b border-white/5">
         <div className="flex items-center gap-4">
           <button onClick={onClose} className="p-4 bg-white/5 rounded-2xl text-slate-400 hover:text-white transition-all active:scale-95"><ChevronLeft size={24} /></button>
@@ -176,8 +204,8 @@ const Infosphere: React.FC<InfosphereProps> = ({ onClose }) => {
             <h1 className="text-2xl font-black tracking-tighter uppercase italic leading-none bg-clip-text text-transparent bg-gradient-to-r from-white via-indigo-300 to-indigo-500">Infosphere</h1>
             <div className="flex items-center gap-2 mt-1">
                <span className="text-[9px] font-black text-indigo-400 bg-indigo-400/10 px-2 py-0.5 rounded-full uppercase tracking-widest border border-indigo-400/20 flex items-center gap-1">
-                 <AudioLines size={8} className={loading ? 'animate-pulse' : ''} /> 
-                 {loading ? 'Processing...' : 'Voice Sync Active'}
+                 <Brain size={8} className={loading ? 'animate-pulse' : ''} /> 
+                 {loading ? 'Thinking Deeply...' : 'AI Thinking Mode Active'}
                </span>
             </div>
           </div>
@@ -187,14 +215,14 @@ const Infosphere: React.FC<InfosphereProps> = ({ onClose }) => {
               <button 
                 onClick={() => setVoiceGender('female')}
                 className={`p-2.5 rounded-xl transition-all ${voiceGender === 'female' ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-400'}`}
-                title="Realistic Female Voice (Kore)"
+                title="Voice: Kore"
               >
                 <UserCircle size={20} />
               </button>
               <button 
                 onClick={() => setVoiceGender('male')}
                 className={`p-2.5 rounded-xl transition-all ${voiceGender === 'male' ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-400'}`}
-                title="Realistic Male Voice (Fenrir)"
+                title="Voice: Fenrir"
               >
                 <UserCircle2 size={20} />
               </button>
@@ -202,7 +230,6 @@ const Infosphere: React.FC<InfosphereProps> = ({ onClose }) => {
         </div>
       </div>
 
-      {/* Chat Area */}
       <div 
         ref={scrollRef}
         className="flex-1 overflow-y-auto no-scrollbar p-6 space-y-6 pb-32 bg-[radial-gradient(circle_at_50%_50%,rgba(79,70,229,0.05),transparent_70%)]"
@@ -234,21 +261,24 @@ const Infosphere: React.FC<InfosphereProps> = ({ onClose }) => {
                    <div className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
                    <div className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
                 </div>
-                Retrieving data...
+                Deep Network Thinking...
               </div>
             </div>
           </div>
         )}
       </div>
 
-      {/* Input Area */}
       <div className="absolute bottom-0 inset-x-0 p-8 bg-gradient-to-t from-slate-950 via-slate-950/90 to-transparent pointer-events-none">
         <div className="max-w-xl mx-auto flex items-center gap-4 relative group pointer-events-auto">
           <button 
-            onClick={toggleListening}
-            className={`p-6 rounded-full transition-all shadow-2xl ${isListening ? 'bg-rose-500 animate-pulse scale-110 shadow-rose-500/40' : 'bg-white/10 border border-white/20 text-white hover:bg-white/20'}`}
+            onMouseDown={startTranscription}
+            onMouseUp={stopTranscription}
+            onTouchStart={startTranscription}
+            onTouchEnd={stopTranscription}
+            className={`p-6 rounded-full transition-all shadow-2xl ${isTranscribing ? 'bg-rose-500 animate-pulse scale-110 shadow-rose-500/40' : 'bg-white/10 border border-white/20 text-white hover:bg-white/20'}`}
+            title="Hold to Transcribe Voice"
           >
-            {isListening ? <MicOff size={28} /> : <Mic size={28} />}
+            {isTranscribing ? <AudioLines size={28} /> : <Mic size={28} />}
           </button>
           
           <div className="flex-1 relative">
@@ -257,7 +287,7 @@ const Infosphere: React.FC<InfosphereProps> = ({ onClose }) => {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-              placeholder={isListening ? "Spherical mic listening..." : "Inquire with the Infosphere..."}
+              placeholder={isTranscribing ? "Listening to your voice..." : "Inquire with Thinking AI..."}
               className="w-full bg-white/5 border border-white/10 rounded-[2.2rem] py-6 pl-8 pr-20 text-sm font-bold text-white focus:ring-4 focus:ring-indigo-500/10 focus:outline-none transition-all placeholder:text-slate-600 uppercase tracking-tight"
             />
             <button 
@@ -271,7 +301,7 @@ const Infosphere: React.FC<InfosphereProps> = ({ onClose }) => {
         </div>
         <p className="text-[8px] font-black text-slate-600 uppercase tracking-[0.4em] text-center mt-6 flex items-center justify-center gap-3">
           <Sparkles size={10} className="text-indigo-500" />
-          Powered by Gemini 3 Core • Global Academic Network
+          Powered by Gemini 3 Pro (32k Thinking) • Unified Voice Transcription
         </p>
       </div>
     </div>
